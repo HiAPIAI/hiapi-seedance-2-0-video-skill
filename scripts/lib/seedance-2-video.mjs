@@ -103,12 +103,12 @@ export function buildHttpErrorMessage(status, body) {
   const lowerSummary = summary.toLowerCase();
   const prefix = `HTTP ${status}: ${summary}`;
 
-  if (status === 401 || status === 403 || lowerSummary.includes("api key")) {
-    return `${prefix}\nCheck your HiAPI API key or create a new one: ${HIAPI_API_KEYS_URL}`;
-  }
-
   if (status === 402 || lowerSummary.includes("balance") || lowerSummary.includes("credit") || lowerSummary.includes("quota")) {
     return `${prefix}\nYour HiAPI balance or credits may be insufficient. Add credits or check billing in the HiAPI dashboard: ${HIAPI_DASHBOARD_URL}. Pricing: ${HIAPI_PRICING_URL}`;
+  }
+
+  if (status === 401 || status === 403 || lowerSummary.includes("api key")) {
+    return `${prefix}\nCheck your HiAPI API key or create a new one: ${HIAPI_API_KEYS_URL}`;
   }
 
   if (status === 400 || lowerSummary.includes("input_reference") || lowerSummary.includes("invalid")) {
@@ -210,7 +210,13 @@ export async function generateVideo(options, config = resolveConfig()) {
 export async function saveVideoOutput(videoUrl, outputDir = DEFAULT_OUTPUT_DIR) {
   if (!/^https?:\/\//i.test(videoUrl)) return null;
 
-  const response = await fetch(videoUrl);
+  let response;
+  try {
+    response = await fetch(videoUrl);
+  } catch {
+    return null;
+  }
+
   if (!response.ok) return null;
 
   const contentType = response.headers.get("content-type") || "video/mp4";

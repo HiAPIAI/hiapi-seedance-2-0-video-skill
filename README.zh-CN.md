@@ -175,7 +175,7 @@ node scripts/hiapi-seedance-2-video.mjs \
 | --- | --- |
 | `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
 | `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
-| `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
+| `402 Payment Required` / `403` quota / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
 | `400 Bad Request` | 检查视频时长、清晰度、画面比例和图片 URL。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
 | 任务超时 | 视频可能还在生成中，稍后重试，或生成更短的视频。 |
