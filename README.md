@@ -106,7 +106,8 @@ Ask your AI Agent to generate a video with natural language. If you provide an i
 - Text-to-video: describe a scene, camera movement, mood, and sound atmosphere
 - Image-to-video: provide a public image URL or data URI and describe how it should move
 - Durations: `4`, `5`, `8`, `10` seconds
-- Sizes: `1280*720`, `720*1280`, `1280*1280`
+- Resolutions: `480p`, `720p`
+- Ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
 - Local output: videos are saved to `outputs/` when the result can be downloaded
 - URL output: if the video cannot be downloaded, the Agent returns the remote video URL
 - Clear errors: missing Key, invalid Key, insufficient balance, invalid image URL, task timeout, and task failure all include a next step
@@ -129,7 +130,8 @@ Text-to-video:
 node scripts/hiapi-seedance-2-video.mjs \
   --prompt "A cinematic shot of ocean waves crashing against cliffs at golden hour" \
   --seconds 5 \
-  --size 1280*720
+  --resolution 720p \
+  --ratio 16:9
 ```
 
 Image-to-video:
@@ -174,7 +176,7 @@ node scripts/hiapi-seedance-2-video.mjs \
 | `HIAPI_API_KEY is required` | Create a Key at [Get API Key](https://www.hiapi.ai/en/register), then set `HIAPI_API_KEY`. |
 | `401 Unauthorized` | Check whether the API Key is correct, or generate a new Key. |
 | `402 Payment Required` / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
-| `400 Bad Request` | Check the duration, size, and image URL. |
+| `400 Bad Request` | Check the duration, resolution, ratio, and image URL. |
 | `429 Too Many Requests` | Wait and retry, or reduce concurrent generation requests. |
 | Task timed out | The video may still be running. Try again later or create a shorter video. |
 | Task failed | Try a clearer prompt or a different image. |

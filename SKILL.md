@@ -28,7 +28,11 @@ Never invent a video result. If the API call fails, report the status code, comp
 Run:
 
 ```bash
-node scripts/hiapi-seedance-2-video.mjs --prompt "A cinematic ocean cliff shot at golden hour" --seconds 5 --size 1280*720
+node scripts/hiapi-seedance-2-video.mjs \
+  --prompt "A cinematic ocean cliff shot at golden hour" \
+  --seconds 5 \
+  --resolution 720p \
+  --ratio 16:9
 ```
 
 For image-to-video, pass a public image URL or data URI:
@@ -44,11 +48,19 @@ Supported durations:
 - `8`
 - `10`
 
-Supported sizes:
+Supported resolutions:
 
-- `1280*720`
-- `720*1280`
-- `1280*1280`
+- `480p`
+- `720p`
+
+Supported ratios:
+
+- `16:9`
+- `9:16`
+- `1:1`
+- `4:3`
+- `3:4`
+- `21:9`
 
 The script creates a video task, polls until it finishes, downloads the video to `outputs/` when possible, and prints JSON with the saved file path or remote URL.
 
@@ -68,7 +80,8 @@ with:
   "model": "seedance-2-0",
   "prompt": "...",
   "seconds": "5",
-  "size": "1280*720",
+  "resolution": "720p",
+  "ratio": "16:9",
   "input_reference": "https://example.com/photo.jpg"
 }
 ```
@@ -92,7 +105,7 @@ Use `--live` only when you want to verify that the configured key can reach the 
 - Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/en/register and export it.
 - HTTP `401` or `403`: tell the user to verify the HiAPI API key.
 - HTTP `402`, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
-- HTTP `400`: tell the user to check the duration, size, and image URL.
+- HTTP `400`: tell the user to check the duration, resolution, ratio, and image URL.
 - HTTP `429`: tell the user to wait and retry or reduce concurrent video generations.
 - Task failure: ask the user to try a clearer prompt or a different image.
 - Timeout: explain that video generation may still be running and the user can retry later.

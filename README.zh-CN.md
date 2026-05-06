@@ -106,7 +106,8 @@ node scripts/check-config.mjs --live
 - 文生视频：描述场景、镜头运动、氛围和声音感，生成视频
 - 图生视频：提供图片 URL 或 data URI，描述你希望图片如何动起来
 - 视频时长：`4`、`5`、`8`、`10` 秒
-- 视频尺寸：`1280*720`、`720*1280`、`1280*1280`
+- 视频清晰度：`480p`、`720p`
+- 画面比例：`16:9`、`9:16`、`1:1`、`4:3`、`3:4`、`21:9`
 - 本地输出：可下载的视频会保存到 `outputs/`
 - URL 输出：如果视频无法下载，Agent 会返回远程视频 URL
 - 错误提示：未配置 Key、Key 无效、余额不足、图片不可访问、任务超时、任务失败都有明确下一步
@@ -129,7 +130,8 @@ node scripts/check-config.mjs --live
 node scripts/hiapi-seedance-2-video.mjs \
   --prompt "A cinematic shot of ocean waves crashing against cliffs at golden hour" \
   --seconds 5 \
-  --size 1280*720
+  --resolution 720p \
+  --ratio 16:9
 ```
 
 图生视频：
@@ -174,7 +176,7 @@ node scripts/hiapi-seedance-2-video.mjs \
 | `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
 | `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
 | `402 Payment Required` / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
-| `400 Bad Request` | 检查视频时长、尺寸和图片 URL。 |
+| `400 Bad Request` | 检查视频时长、清晰度、画面比例和图片 URL。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
 | 任务超时 | 视频可能还在生成中，稍后重试，或生成更短的视频。 |
 | 任务失败 | 换一个更清晰的提示词，或换一张图片。 |

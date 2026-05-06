@@ -58,7 +58,8 @@ Text-to-video:
 node scripts/hiapi-seedance-2-video.mjs \
   --prompt "A cinematic ocean cliff shot at golden hour" \
   --seconds 5 \
-  --size 1280*720
+  --resolution 720p \
+  --ratio 16:9
 ```
 
 Image-to-video:
@@ -80,7 +81,7 @@ When this skill is used:
 5. Return the generated video file path or remote URL.
 6. If generation fails, return the HTTP status and compact error message.
 7. If the error mentions balance, credits, quota, or HTTP 402, tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard.
-8. If the error is HTTP 400, tell the user to check the duration, size, and image URL.
+8. If the error is HTTP 400, tell the user to check the duration, resolution, ratio, and image URL.
 9. If the error is HTTP 429, tell the user to wait and retry.
 10. If the task fails or times out, ask the user to try a clearer prompt or a different image.
 
