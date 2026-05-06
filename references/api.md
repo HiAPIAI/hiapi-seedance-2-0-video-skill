@@ -44,7 +44,8 @@ Text-to-video:
   "model": "seedance-2-0",
   "prompt": "A cinematic ocean cliff shot at golden hour",
   "seconds": "5",
-  "size": "1280*720"
+  "resolution": "720p",
+  "ratio": "16:9"
 }
 ```
 
@@ -56,7 +57,8 @@ Image-to-video:
   "prompt": "The product photo comes alive with soft camera movement",
   "input_reference": "https://example.com/product.jpg",
   "seconds": "5",
-  "size": "1280*720"
+  "resolution": "720p",
+  "ratio": "16:9"
 }
 ```
 
@@ -66,7 +68,8 @@ Image-to-video:
 | --- | --- | --- |
 | `prompt` | yes | Text video instruction. Describe the subject, motion, camera movement, mood, and sound atmosphere. |
 | `seconds` | no | `4`, `5`, `8`, or `10`. Defaults to `5`. |
-| `size` | no | `1280*720`, `720*1280`, or `1280*1280`. Defaults to `1280*720`. |
+| `resolution` | no | `480p` or `720p`. Defaults to `720p`. |
+| `ratio` | no | `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, or `21:9`. Defaults to `16:9`. |
 | `input_reference` | no | Public image URL or data URI for image-to-video. |
 
 Seedance 2.0 supports text-to-video without an image. When `input_reference` is provided, the image becomes the starting frame.

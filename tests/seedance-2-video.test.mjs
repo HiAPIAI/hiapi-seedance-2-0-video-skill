@@ -6,8 +6,9 @@ import {
   buildVideoPayload,
   extractTaskId,
   extractVideoUrl,
+  normalizeRatio,
+  normalizeResolution,
   normalizeSeconds,
-  normalizeSize,
   resolveConfig,
 } from "../scripts/lib/seedance-2-video.mjs";
 
@@ -16,13 +17,15 @@ test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
     buildVideoPayload({
       prompt: "A cinematic ocean cliff shot at golden hour",
       seconds: "5",
-      size: "1280*720",
+      resolution: "720p",
+      ratio: "16:9",
     }),
     {
       model: "seedance-2-0",
       prompt: "A cinematic ocean cliff shot at golden hour",
       seconds: "5",
-      size: "1280*720",
+      resolution: "720p",
+      ratio: "16:9",
     },
   );
 });
@@ -35,17 +38,22 @@ test("adds input_reference only when an image is provided", () => {
 
   assert.equal(payload.model, "seedance-2-0");
   assert.equal(payload.seconds, "5");
-  assert.equal(payload.size, "1280*720");
+  assert.equal(payload.resolution, "720p");
+  assert.equal(payload.ratio, "16:9");
   assert.equal(payload.input_reference, "https://example.com/product.png");
 });
 
-test("validates duration and size before sending a request", () => {
+test("validates duration, resolution, and ratio before sending a request", () => {
   assert.equal(normalizeSeconds("4"), "4");
   assert.equal(normalizeSeconds(10), "10");
   assert.throws(() => normalizeSeconds("12"), /Unsupported duration/);
 
-  assert.equal(normalizeSize("720*1280"), "720*1280");
-  assert.throws(() => normalizeSize("1920x1080"), /Unsupported size/);
+  assert.equal(normalizeResolution("480p"), "480p");
+  assert.equal(normalizeResolution("720P"), "720p");
+  assert.throws(() => normalizeResolution("1080P"), /Unsupported resolution/);
+
+  assert.equal(normalizeRatio("9:16"), "9:16");
+  assert.throws(() => normalizeRatio("2:1"), /Unsupported ratio/);
 });
 
 test("extracts task ids and video URLs from common HiAPI response shapes", () => {
@@ -91,7 +99,7 @@ test("buildHttpErrorMessage gives next actions for key, balance, image, rate, an
   );
   assert.match(
     buildHttpErrorMessage(400, { error: { message: "input_reference is invalid" } }),
-    /duration, size, and image URL/i,
+    /duration, resolution, ratio, and image URL/i,
   );
   assert.match(
     buildHttpErrorMessage(429, { error: { message: "Too many requests" } }),

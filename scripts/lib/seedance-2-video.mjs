@@ -5,7 +5,8 @@ import { join, resolve } from "node:path";
 export const MODEL = "seedance-2-0";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SECONDS = "5";
-export const DEFAULT_SIZE = "1280*720";
+export const DEFAULT_RESOLUTION = "720p";
+export const DEFAULT_RATIO = "16:9";
 export const DEFAULT_OUTPUT_DIR = "outputs";
 export const POLL_INTERVAL_MS = 5000;
 export const POLL_TIMEOUT_MS = 180000;
@@ -14,7 +15,8 @@ export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
 export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
 
 export const SUPPORTED_SECONDS = new Set(["4", "5", "8", "10"]);
-export const SUPPORTED_SIZES = new Set(["1280*720", "720*1280", "1280*1280"]);
+export const SUPPORTED_RESOLUTIONS = new Set(["480p", "720p"]);
+export const SUPPORTED_RATIOS = new Set(["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"]);
 
 export function resolveConfig(env = process.env) {
   const apiKey = env.HIAPI_API_KEY?.trim();
@@ -38,15 +40,23 @@ export function normalizeSeconds(value = DEFAULT_SECONDS) {
   return seconds;
 }
 
-export function normalizeSize(value = DEFAULT_SIZE) {
-  const size = String(value).trim();
-  if (!SUPPORTED_SIZES.has(size)) {
-    throw new Error(`Unsupported size "${size}". Use one of: ${Array.from(SUPPORTED_SIZES).join(", ")}.`);
+export function normalizeResolution(value = DEFAULT_RESOLUTION) {
+  const resolution = String(value).trim().toLowerCase();
+  if (!SUPPORTED_RESOLUTIONS.has(resolution)) {
+    throw new Error(`Unsupported resolution "${resolution}". Use one of: ${Array.from(SUPPORTED_RESOLUTIONS).join(", ")}.`);
   }
-  return size;
+  return resolution;
 }
 
-export function buildVideoPayload({ prompt, seconds, size, inputReference } = {}) {
+export function normalizeRatio(value = DEFAULT_RATIO) {
+  const ratio = String(value).trim();
+  if (!SUPPORTED_RATIOS.has(ratio)) {
+    throw new Error(`Unsupported ratio "${ratio}". Use one of: ${Array.from(SUPPORTED_RATIOS).join(", ")}.`);
+  }
+  return ratio;
+}
+
+export function buildVideoPayload({ prompt, seconds, resolution, ratio, inputReference } = {}) {
   const cleanPrompt = String(prompt || "").trim();
   if (!cleanPrompt) {
     throw new Error("A prompt is required.");
@@ -56,7 +66,8 @@ export function buildVideoPayload({ prompt, seconds, size, inputReference } = {}
     model: MODEL,
     prompt: cleanPrompt,
     seconds: normalizeSeconds(seconds),
-    size: normalizeSize(size),
+    resolution: normalizeResolution(resolution),
+    ratio: normalizeRatio(ratio),
   };
 
   const reference = String(inputReference || "").trim();
@@ -101,7 +112,7 @@ export function buildHttpErrorMessage(status, body) {
   }
 
   if (status === 400 || lowerSummary.includes("input_reference") || lowerSummary.includes("invalid")) {
-    return `${prefix}\nCheck the duration, size, and image URL. Seedance 2.0 supports durations 4, 5, 8, 10 and sizes 1280*720, 720*1280, 1280*1280.`;
+    return `${prefix}\nCheck the duration, resolution, ratio, and image URL. Seedance 2.0 supports durations 4, 5, 8, 10; resolutions 480p, 720p; and ratios 16:9, 9:16, 1:1, 4:3, 3:4, 21:9.`;
   }
 
   if (status === 429 || lowerSummary.includes("rate limit") || lowerSummary.includes("too many")) {
@@ -178,6 +189,7 @@ export async function generateVideo(options, config = resolveConfig()) {
     const saved = await saveVideoOutput(videoUrl, options.outputDir || DEFAULT_OUTPUT_DIR);
     if (saved) {
       output.kind = "file";
+      output.value = saved.path;
       output.path = saved.path;
       output.mimeType = saved.mimeType;
       output.sourceUrl = videoUrl;
@@ -188,7 +200,8 @@ export async function generateVideo(options, config = resolveConfig()) {
     model: MODEL,
     taskId,
     seconds: payload.seconds,
-    size: payload.size,
+    resolution: payload.resolution,
+    ratio: payload.ratio,
     outputs: [output],
     rawStatus: response,
   };
@@ -240,8 +253,11 @@ export function parseArgs(argv) {
     } else if (arg === "--seconds") {
       options.seconds = next;
       index += 1;
-    } else if (arg === "--size") {
-      options.size = next;
+    } else if (arg === "--resolution") {
+      options.resolution = next;
+      index += 1;
+    } else if (arg === "--ratio") {
+      options.ratio = next;
       index += 1;
     } else if (arg === "--input-reference" || arg === "--image-url") {
       options.inputReference = next;
@@ -264,13 +280,14 @@ export function parseArgs(argv) {
 
 export function usage() {
   return `Usage:
-  node scripts/hiapi-seedance-2-video.mjs --prompt "A cinematic ocean cliff shot" [--seconds 5] [--size 1280*720]
+  node scripts/hiapi-seedance-2-video.mjs --prompt "A cinematic ocean cliff shot" [--seconds 5] [--resolution 720p] [--ratio 16:9]
 
 Options:
   --prompt <text>              Required video description
   --seconds <4|5|8|10>         Default: 5
-  --size <1280*720|720*1280|1280*1280>
-                              Default: 1280*720
+  --resolution <480p|720p>    Default: 720p
+  --ratio <16:9|9:16|1:1|4:3|3:4|21:9>
+                              Default: 16:9
   --input-reference <url>      Optional image URL or data URI for image-to-video
   --output-dir <path>          Default: outputs
   --no-save                    Return the remote video URL without downloading
