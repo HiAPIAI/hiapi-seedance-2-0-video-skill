@@ -104,7 +104,7 @@ Use `--live` only when you want to verify that the configured key can reach the 
 
 - Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/en/register and export it.
 - HTTP `401` or `403`: tell the user to verify the HiAPI API key.
-- HTTP `402`, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
+- HTTP `402`, HTTP `403` with quota text, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
 - HTTP `400`: tell the user to check the duration, resolution, ratio, and image URL.
 - HTTP `429`: tell the user to wait and retry or reduce concurrent video generations.
 - Task failure: ask the user to try a clearer prompt or a different image.

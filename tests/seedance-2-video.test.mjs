@@ -10,6 +10,7 @@ import {
   normalizeResolution,
   normalizeSeconds,
   resolveConfig,
+  saveVideoOutput,
 } from "../scripts/lib/seedance-2-video.mjs";
 
 test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
@@ -98,6 +99,10 @@ test("buildHttpErrorMessage gives next actions for key, balance, image, rate, an
     /balance or credits may be insufficient/i,
   );
   assert.match(
+    buildHttpErrorMessage(403, { error: { message: "token quota is not enough" } }),
+    /balance or credits may be insufficient/i,
+  );
+  assert.match(
     buildHttpErrorMessage(400, { error: { message: "input_reference is invalid" } }),
     /duration, resolution, ratio, and image URL/i,
   );
@@ -109,4 +114,17 @@ test("buildHttpErrorMessage gives next actions for key, balance, image, rate, an
     buildHttpErrorMessage(500, { error: { message: "task failed" } }),
     /try a clearer prompt or a different image/i,
   );
+});
+
+test("returns null when remote video download fails", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    throw new Error("fetch failed");
+  };
+
+  try {
+    assert.equal(await saveVideoOutput("https://cdn.example.com/out.mp4"), null);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

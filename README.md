@@ -175,7 +175,7 @@ node scripts/hiapi-seedance-2-video.mjs \
 | --- | --- |
 | `HIAPI_API_KEY is required` | Create a Key at [Get API Key](https://www.hiapi.ai/en/register), then set `HIAPI_API_KEY`. |
 | `401 Unauthorized` | Check whether the API Key is correct, or generate a new Key. |
-| `402 Payment Required` / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
+| `402 Payment Required` / `403` quota / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
 | `400 Bad Request` | Check the duration, resolution, ratio, and image URL. |
 | `429 Too Many Requests` | Wait and retry, or reduce concurrent generation requests. |
 | Task timed out | The video may still be running. Try again later or create a shorter video. |

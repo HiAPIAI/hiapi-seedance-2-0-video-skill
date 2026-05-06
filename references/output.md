@@ -35,7 +35,7 @@ If the video cannot be downloaded, return the remote URL instead.
 
 - Missing key: "Set `HIAPI_API_KEY` first. You can create a key at https://www.hiapi.ai/en/register."
 - Invalid key: "HiAPI rejected the API key. Check or regenerate it at https://www.hiapi.ai/en/register."
-- Insufficient balance: "Your HiAPI balance or credits may be insufficient. Add credits or check billing at https://www.hiapi.ai/en/dashboard."
+- Insufficient balance or quota: "Your HiAPI balance or credits may be insufficient. Add credits or check billing at https://www.hiapi.ai/en/dashboard."
 - Invalid request: "Check the duration, resolution, ratio, and image URL. Seedance 2.0 supports 4, 5, 8, 10 seconds; 480p and 720p; and 16:9, 9:16, 1:1, 4:3, 3:4, 21:9."
 - Rate limited: "The request was rate limited. Wait and retry, or reduce concurrent video requests."
 - Task failed: "Try a clearer prompt or a different image."
