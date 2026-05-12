@@ -4,7 +4,7 @@ Add Seedance 2.0 video generation to your AI Agent.
 
 **Seedance 2.0 • Install • API Key • [HiAPI](https://www.hiapi.ai)**
 
-[Get API Key](https://www.hiapi.ai/en/register) · [Pricing](https://www.hiapi.ai/en/pricing) · [HiAPI Docs](https://docs.hiapi.ai)
+[Get API Key](https://www.hiapi.ai/en/register) · [Pricing](https://www.hiapi.ai/en/pricing) · [HiAPI Docs](https://docs.hiapi.ai) · [All HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills) · [Remote MCP](https://docs.hiapi.ai/for-ai/)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
@@ -23,6 +23,12 @@ HiAPI is an AI API platform built for developers: one API, all AI models. Images
 | Skill | Description | Model |
 | --- | --- | --- |
 | HiAPI Seedance 2.0 Video | Text-to-video and image-to-video | Seedance 2.0 |
+
+---
+
+## Where This Fits
+
+Use this skill when the user needs a stronger video workflow, especially text-to-video plus image-to-video. If the user needs a fast lightweight text-to-video draft, route them to [hiapi-happyhorse-1-0-video-skill](https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill). If they need a still-image starting point before animation, use [awesome-gpt-image-2-prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts). For broader agent discovery, use [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills) or Remote MCP at `https://mcp.hiapi.ai/mcp`.
 
 ---
 
