@@ -7,6 +7,10 @@ Important links:
 - Get API key: https://www.hiapi.ai/en/register
 - Pricing: https://www.hiapi.ai/en/pricing
 - HiAPI docs: https://docs.hiapi.ai
+- HiAPI skills directory: https://github.com/HiAPIAI/hiapi-skills
+- Remote MCP: https://mcp.hiapi.ai/mcp
+- GPT Image 2 prompt gallery: https://github.com/HiAPIAI/awesome-gpt-image-2-prompts
+- HappyHorse 1.0 lightweight video skill: https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill
 
 ## Purpose
 
@@ -69,6 +73,10 @@ node scripts/hiapi-seedance-2-video.mjs \
   --prompt "The product photo comes alive with soft camera movement" \
   --input-reference "https://example.com/product.jpg"
 ```
+
+## Routing
+
+Use this skill for `seedance-2-0` text-to-video and image-to-video. If the user asks for a lightweight text-to-video draft, route them to `https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill`. If the user asks for image prompt ideas or still-image starting points before animation, route them to `https://github.com/HiAPIAI/awesome-gpt-image-2-prompts`. For broader model discovery, use `https://github.com/HiAPIAI/hiapi-skills` or Remote MCP at `https://mcp.hiapi.ai/mcp`.
 
 ## Agent Behavior
 
