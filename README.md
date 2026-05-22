@@ -34,26 +34,30 @@ Use this skill when the user needs a stronger video workflow, especially text-to
 
 ## Install
 
-### Quick Install (OpenClaw)
+### One Command (Recommended)
+
+```bash
+npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y
+```
+
+The installer auto-detects Codex (`~/.codex/skills`) and Claude Code (`~/.claude/skills`). If both exist, the `-y` flag installs to both. To target a specific agent or directory:
+
+```bash
+npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill --codex          # ~/.codex/skills only
+npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill --claude         # ~/.claude/skills only
+npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill --target=/path   # custom directory
+AGENT_SKILLS_DIR=/path npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y
+```
+
+The script also reports whether `HIAPI_API_KEY` is set and links to where to create one.
+
+### OpenClaw
 
 ```bash
 openclaw skills add https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill
 ```
 
-### Install Into Codex
-
-```bash
-git clone https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill.git
-cd hiapi-seedance-2-0-video-skill
-npm test
-
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R . "${CODEX_HOME:-$HOME/.codex}/skills/hiapi-seedance-2-0-video"
-```
-
-Restart Codex after copying the skill.
-
-### Manual Install For Any Agent
+### Manual Install (Any Agent)
 
 ```bash
 git clone https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill.git
@@ -69,10 +73,10 @@ Replace `AGENT_SKILLS_DIR` with your agent's skill directory.
 ```text
 Install the HiAPI Seedance 2.0 video generation skill:
 
-1. Clone https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill
-2. Copy the repository into your skill directory as hiapi-seedance-2-0-video
-3. Set the HIAPI_API_KEY environment variable
-4. Read SKILL.md for usage
+1. Run: npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y
+   (auto-detects Codex / Claude Code skill directories)
+2. Set the HIAPI_API_KEY environment variable from https://www.hiapi.ai/en/dashboard/api-keys
+3. Read SKILL.md for usage
 ```
 
 ---
@@ -194,11 +198,11 @@ node scripts/hiapi-seedance-2-video.mjs \
 
 | Agent | Install Method |
 | --- | --- |
+| Codex | `npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill --codex` |
+| Claude Code | `npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill --claude` |
 | OpenClaw | `openclaw skills add https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill` |
-| Codex | Copy to `${CODEX_HOME:-$HOME/.codex}/skills/hiapi-seedance-2-0-video` |
-| Claude Code | Copy to `~/.claude/skills/hiapi-seedance-2-0-video` |
-| OpenCode | Copy to `~/.opencode/skills/hiapi-seedance-2-0-video` |
-| Cursor / other agents | Copy to the corresponding skill directory |
+| OpenCode | `AGENT_SKILLS_DIR=~/.opencode/skills npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y` |
+| Cursor / other | `npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill --target=/your/skills/dir` |
 
 ---
 
