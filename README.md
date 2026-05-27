@@ -30,7 +30,7 @@ HiAPI is an AI API platform built for developers: one API, all AI models. Images
 
 ## Where This Fits
 
-Use this skill when the user needs a stronger video workflow, especially text-to-video plus image-to-video. If the user needs a fast lightweight text-to-video draft, route them to [hiapi-happyhorse-1-0-video-skill](https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill). If they need a still-image starting point before animation, use [awesome-gpt-image-2-prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts). For broader agent discovery, use [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills) or Remote MCP at `https://mcp.hiapi.ai/mcp`.
+Use this skill when the user needs a stronger video workflow, especially text-to-video plus image-to-video. If the user needs a fast lightweight text-to-video draft, route them to [hiapi-happyhorse-1-0-video-skill](https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill). If their brief is one or two sentences and they need a directed, scene-by-scene prompt before generating, run it through [hiapi-video-prompt-generator-skill](https://github.com/HiAPIAI/hiapi-video-prompt-generator-skill) first. If they need a still-image starting point before animation, use [awesome-gpt-image-2-prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts). For broader agent discovery, use [hiapi-skills](https://github.com/HiAPIAI/hiapi-skills) or Remote MCP at `https://mcp.hiapi.ai/mcp`.
 
 ---
 
