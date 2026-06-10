@@ -7,6 +7,7 @@ import {
   checkSkillUpdate,
   compareVersions,
   extractTaskId,
+  extractTaskFailureSummary,
   extractVideoUrl,
   normalizeMediaOptions,
   normalizeRatio,
@@ -215,6 +216,24 @@ test("extracts task ids and video URLs from common HiAPI response shapes", () =>
   assert.equal(
     extractVideoUrl({ metadata: { url: "https://cdn.example.com/meta.mp4" } }),
     "https://cdn.example.com/meta.mp4",
+  );
+});
+
+test("extracts task failure reason from failed task detail instead of outer success message", () => {
+  assert.equal(
+    extractTaskFailureSummary({
+      code: 200,
+      message: "success",
+      data: {
+        status: "fail",
+        taskId: "tk-hiapi-failed",
+        error: {
+          code: "TASK_FAILED",
+          message: "task failed",
+        },
+      },
+    }),
+    "TASK_FAILED: task failed",
   );
 });
 

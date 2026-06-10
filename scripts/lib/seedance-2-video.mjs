@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 export const MODEL = "seedance-2-0";
 export const SKILL_ID = "hiapi-seedance-2-0-video";
-export const SKILL_VERSION = "0.1.2";
+export const SKILL_VERSION = "0.1.3";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_SECONDS = "5";
@@ -256,6 +256,37 @@ export function getTaskStatus(response) {
   return String(status).toLowerCase();
 }
 
+export function extractTaskFailureSummary(response) {
+  const candidates = [
+    response?.data?.error,
+    response?.data?.fail_reason,
+    response?.data?.failReason,
+    response?.data?.error_message,
+    response?.data?.errorMessage,
+    response?.data?.task_status_msg,
+    response?.data?.taskStatusMsg,
+    response?.data?.output?.error,
+    response?.data?.output?.fail_reason,
+    response?.data?.output?.error_message,
+    response?.data?.output?.task_status_msg,
+    response?.error,
+    response?.fail_reason,
+    response?.error_message,
+    response?.task_status_msg,
+    response?.message,
+  ];
+
+  for (const candidate of candidates) {
+    const summary = summarizeErrorBody(candidate);
+    if (isUsefulFailureSummary(summary)) return summary;
+  }
+
+  const taskId = extractTaskId(response);
+  return taskId
+    ? `task failed without a public failure reason. Task ID: ${taskId}`
+    : "task failed without a public failure reason.";
+}
+
 export function buildHttpErrorMessage(status, body) {
   const summary = summarizeErrorBody(body);
   const lowerSummary = summary.toLowerCase();
@@ -321,7 +352,7 @@ export async function waitForVideo(taskId, config = resolveConfig(), options = {
     }
 
     if (status === "fail" || status === "failed") {
-      throw new Error(`Video generation failed: ${summarizeErrorBody(response.error || response.message || response)}`);
+      throw new Error(`Video generation failed: ${extractTaskFailureSummary(response)}`);
     }
   }
 
@@ -617,6 +648,9 @@ export function compareVersions(left, right) {
 function summarizeErrorBody(body) {
   if (!body) return "Unknown error";
   if (typeof body === "string") return body;
+  if (typeof body === "object" && body.code && body.message && body.message !== "success") {
+    return `${body.code}: ${body.message}`;
+  }
   return (
     body.error?.message ||
     body.message ||
@@ -624,6 +658,11 @@ function summarizeErrorBody(body) {
     body.detail ||
     JSON.stringify(body)
   );
+}
+
+function isUsefulFailureSummary(summary) {
+  const normalized = String(summary || "").trim().toLowerCase();
+  return normalized !== "" && normalized !== "unknown error" && normalized !== "success" && normalized !== "ok";
 }
 
 function timestamp() {
