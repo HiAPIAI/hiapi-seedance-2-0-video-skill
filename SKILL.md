@@ -49,6 +49,7 @@ Supported resolutions:
 
 - `480p`
 - `720p`
+- `1080p`
 
 Supported ratios:
 
@@ -58,6 +59,22 @@ Supported ratios:
 - `4:3`
 - `3:4`
 - `21:9`
+- `adaptive`
+
+Media modes are mutually exclusive:
+
+- **Text-to-video**: no media fields.
+- **First-frame image-to-video**: use `--first-frame-url` or legacy alias `--input-reference`.
+- **First+last-frame image-to-video**: use both `--first-frame-url` and `--last-frame-url`.
+- **Multimodal reference video generation**: use `--reference-image-url`, `--reference-video-url`, and/or `--reference-audio-url`.
+
+Do not mix first/last-frame fields with reference image/video/audio fields. Multimodal reference mode can ask in the prompt for a reference image to act as first or last frame, but strict first/last-frame identity should use first+last-frame mode.
+
+Reference material limits:
+
+- `reference_image_urls` plus first/last-frame images: at most 9 images total.
+- `reference_video_urls`: at most 3 videos; each 2-15 seconds; total duration at most 15 seconds. The CLI requires one `--reference-video-duration` per video URL.
+- `reference_audio_urls`: at most 3 audio clips; each 2-15 seconds; total duration at most 15 seconds. The CLI requires one `--reference-audio-duration` per audio URL.
 
 The script creates a video task, polls until it finishes, downloads the video to `outputs/` when possible, and prints JSON with the saved file path or remote URL.
 
@@ -81,12 +98,19 @@ with:
     "resolution": "720p",
     "aspect_ratio": "16:9",
     "first_frame_url": "https://example.com/photo.jpg",
+    "last_frame_url": "https://example.com/end.jpg",
+    "reference_image_urls": ["asset://image-1"],
+    "reference_video_urls": ["asset://video-1"],
+    "reference_audio_urls": ["asset://audio-1"],
+    "return_last_frame": false,
+    "web_search": false,
+    "nsfw_checker": false,
     "generate_audio": false
   }
 }
 ```
 
-`first_frame_url` is optional. The CLI still accepts `--input-reference` as a convenience alias, then sends it as `input.first_frame_url`. `generate_audio` defaults to `false`; pass `--generate-audio` only when the user wants generated audio.
+`first_frame_url` is optional. The CLI still accepts `--input-reference` as a convenience alias, then sends it as `input.first_frame_url`. Do not include `reference_*_urls` in the same request as first/last-frame fields. `generate_audio` defaults to `false`; pass `--generate-audio` only when the user wants generated audio.
 
 For details, read `references/api.md` and `references/output.md`.
 
@@ -105,7 +129,7 @@ Use `--live` only when you want to verify that the configured key can reach the 
 - Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/en/register and export it.
 - HTTP `401` or `403`: tell the user to verify the HiAPI API key.
 - HTTP `402`, HTTP `403` with quota text, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
-- HTTP `400`: tell the user to check the duration, resolution, ratio, and image URL.
+- HTTP `400`: tell the user to check duration, resolution, ratio, media mode, reference counts, and reference audio/video durations.
 - HTTP `429`: tell the user to wait and retry or reduce concurrent video generations.
 - Task failure: ask the user to try a clearer prompt or a different image.
 - Timeout: explain that video generation may still be running and the user can retry later.

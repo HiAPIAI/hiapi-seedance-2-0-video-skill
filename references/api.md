@@ -68,6 +68,41 @@ Image-to-video:
 }
 ```
 
+First+last-frame image-to-video:
+
+```json
+{
+  "model": "seedance-2-0",
+  "input": {
+    "prompt": "Move from the first frame to the final hero frame",
+    "first_frame_url": "asset://first-frame",
+    "last_frame_url": "asset://last-frame",
+    "duration": 5,
+    "resolution": "720p",
+    "aspect_ratio": "16:9",
+    "generate_audio": false
+  }
+}
+```
+
+Multimodal reference mode:
+
+```json
+{
+  "model": "seedance-2-0",
+  "input": {
+    "prompt": "Use the reference images, motion video, and audio mood to create a product spot",
+    "reference_image_urls": ["asset://image-1"],
+    "reference_video_urls": ["asset://video-1"],
+    "reference_audio_urls": ["asset://audio-1"],
+    "duration": 5,
+    "resolution": "720p",
+    "aspect_ratio": "16:9",
+    "generate_audio": false
+  }
+}
+```
+
 ## Parameters
 
 | Parameter | Required | Notes |
@@ -75,9 +110,16 @@ Image-to-video:
 | `model` | yes | Must be `seedance-2-0`. |
 | `input.prompt` | yes | Text video instruction. Describe the subject, motion, camera movement, mood, and sound atmosphere. |
 | `input.duration` | no | Integer seconds from `4` to `15`. Defaults to `5`. |
-| `input.resolution` | no | `480p` or `720p`. Defaults to `720p`. |
-| `input.aspect_ratio` | no | `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, or `21:9`. Defaults to `16:9`. |
-| `input.first_frame_url` | no | Public image URL or data URI for image-to-video. |
+| `input.resolution` | no | `480p`, `720p`, or `1080p`. Defaults to `720p`. |
+| `input.aspect_ratio` | no | `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`, or `adaptive`. Defaults to `16:9`. |
+| `input.first_frame_url` | no | Public image URL, data URI, or `asset://` id for first-frame image-to-video. |
+| `input.last_frame_url` | no | Public image URL, data URI, or `asset://` id for first+last-frame image-to-video. Requires `input.first_frame_url`. |
+| `input.reference_image_urls` | no | Multimodal reference images. Combined count with first/last frames must not exceed 9 images. Do not mix with first/last-frame fields. |
+| `input.reference_video_urls` | no | Multimodal reference videos. At most 3; each 2-15 seconds; total duration at most 15 seconds. Do not mix with first/last-frame fields. |
+| `input.reference_audio_urls` | no | Multimodal reference audio clips. At most 3; each 2-15 seconds; total duration at most 15 seconds. Do not mix with first/last-frame fields. |
 | `input.generate_audio` | no | Boolean. Defaults to `false`; set `true` only when generated audio is desired. |
+| `input.return_last_frame` | no | Boolean. Return the last frame of the generated video when supported. |
+| `input.web_search` | no | Boolean. Enable web search when supported. |
+| `input.nsfw_checker` | no | Boolean. Enable content checking when supported. |
 
-Seedance 2.0 supports text-to-video without an image. When `input.first_frame_url` is provided, the image becomes the starting frame. The CLI accepts `--input-reference` and maps it to `input.first_frame_url`.
+Seedance 2.0 supports text-to-video without media. Three media modes are mutually exclusive: first-frame image-to-video, first+last-frame image-to-video, and multimodal reference generation. The CLI accepts `--input-reference` as a legacy alias for `--first-frame-url`.
