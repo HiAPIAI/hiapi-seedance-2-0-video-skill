@@ -92,5 +92,7 @@ When this skill is used:
 8. If the error is HTTP 400, tell the user to check the duration, resolution, ratio, and image URL.
 9. If the error is HTTP 429, tell the user to wait and retry.
 10. If the task fails or times out, ask the user to try a clearer prompt or a different image.
+11. If the CLI prints "A newer HiAPI skill is available", show the update command but continue with the current result.
+12. If the CLI prints "skill version is no longer compatible" or "Update now:", tell the user they must run the printed update command before using the skill again.
 
 Do not fabricate video paths or URLs.

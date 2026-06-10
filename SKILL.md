@@ -1,6 +1,6 @@
 ---
 name: hiapi-seedance-2-0-video
-description: Generate videos with HiAPI's seedance-2-0 model via the HiAPI video endpoint. Use when a user asks to create a video with Seedance 2.0, HiAPI Seedance 2.0, or this specific skill.
+description: Generate videos with HiAPI's seedance-2-0 model via the HiAPI unified async task API. Use when a user asks to create a video with Seedance 2.0, HiAPI Seedance 2.0, or this specific skill.
 metadata:
   short-description: Generate Seedance 2.0 videos through HiAPI
 ---
@@ -43,10 +43,7 @@ node scripts/hiapi-seedance-2-video.mjs --prompt "The product photo comes alive 
 
 Supported durations:
 
-- `4`
-- `5`
-- `8`
-- `10`
+- any integer from `4` to `15`
 
 Supported resolutions:
 
@@ -69,8 +66,8 @@ The script creates a video task, polls until it finishes, downloads the video to
 This skill calls:
 
 ```text
-POST /v1/videos
-GET /v1/videos/{id}
+POST /v1/tasks
+GET /v1/tasks/{taskId}
 ```
 
 with:
@@ -78,15 +75,18 @@ with:
 ```json
 {
   "model": "seedance-2-0",
-  "prompt": "...",
-  "seconds": "5",
-  "resolution": "720p",
-  "ratio": "16:9",
-  "input_reference": "https://example.com/photo.jpg"
+  "input": {
+    "prompt": "...",
+    "duration": 5,
+    "resolution": "720p",
+    "aspect_ratio": "16:9",
+    "first_frame_url": "https://example.com/photo.jpg",
+    "generate_audio": false
+  }
 }
 ```
 
-`input_reference` is optional. If present, Seedance 2.0 uses it as the starting image for image-to-video.
+`first_frame_url` is optional. The CLI still accepts `--input-reference` as a convenience alias, then sends it as `input.first_frame_url`. `generate_audio` defaults to `false`; pass `--generate-audio` only when the user wants generated audio.
 
 For details, read `references/api.md` and `references/output.md`.
 
@@ -109,3 +109,5 @@ Use `--live` only when you want to verify that the configured key can reach the 
 - HTTP `429`: tell the user to wait and retry or reduce concurrent video generations.
 - Task failure: ask the user to try a clearer prompt or a different image.
 - Timeout: explain that video generation may still be running and the user can retry later.
+- Optional skill update notice: tell the user the printed update command can be run later.
+- Required skill update notice: tell the user the printed update command must be run before using this skill again.
