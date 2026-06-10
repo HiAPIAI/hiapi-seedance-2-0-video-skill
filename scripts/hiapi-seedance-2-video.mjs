@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { generateVideo, parseArgs, resolveConfig, usage } from "./lib/seedance-2-video.mjs";
+import { generateVideo, parseArgs, resolveConfig, usage, warnOrRequireSkillUpdate } from "./lib/seedance-2-video.mjs";
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -7,6 +7,8 @@ async function main() {
     console.log(usage());
     return;
   }
+
+  await warnOrRequireSkillUpdate();
 
   const config = resolveConfig();
   const result = await generateVideo(options, config);

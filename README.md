@@ -117,9 +117,10 @@ Ask your AI Agent to generate a video with natural language. If you provide an i
 
 - Text-to-video: describe a scene, camera movement, mood, and sound atmosphere
 - Image-to-video: provide a public image URL or data URI and describe how it should move
-- Durations: `4`, `5`, `8`, `10` seconds
+- Durations: any integer from `4` to `15` seconds
 - Resolutions: `480p`, `720p`
 - Ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
+- Optional generated audio: pass `--generate-audio` when audio is needed
 - Local output: videos are saved to `outputs/` when the result can be downloaded
 - URL output: if the video cannot be downloaded, the Agent returns the remote video URL
 - Clear errors: missing Key, invalid Key, insufficient balance, invalid image URL, task timeout, and task failure all include a next step
@@ -153,6 +154,15 @@ node scripts/hiapi-seedance-2-video.mjs \
   --prompt "The product photo comes alive with soft camera movement and studio lighting" \
   --input-reference "https://example.com/product.jpg" \
   --seconds 5
+```
+
+With generated audio:
+
+```bash
+node scripts/hiapi-seedance-2-video.mjs \
+  --prompt "A coffee shop scene with natural background ambience" \
+  --seconds 5 \
+  --generate-audio
 ```
 
 ---
@@ -193,6 +203,10 @@ node scripts/hiapi-seedance-2-video.mjs \
 | Task timed out | The video may still be running. Try again later or create a shorter video. |
 | Task failed | Try a clearer prompt or a different image. |
 | No video output | Check the task response; this skill expects a video URL after the task succeeds. |
+| Skill update available | The CLI checks the HiAPI skills index at startup. If the update is optional, it prints the upgrade command and continues. |
+| Skill update required | The CLI stops and prints the required upgrade command. Run `npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y`, then restart your agent. |
+
+Set `HIAPI_SKIP_UPDATE_CHECK=1` only for offline or locked-down environments where the skills index cannot be reached.
 
 ---
 

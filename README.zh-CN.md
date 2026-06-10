@@ -117,9 +117,10 @@ node scripts/check-config.mjs --live
 
 - 文生视频：描述场景、镜头运动、氛围和声音感，生成视频
 - 图生视频：提供图片 URL 或 data URI，描述你希望图片如何动起来
-- 视频时长：`4`、`5`、`8`、`10` 秒
+- 视频时长：`4` 到 `15` 秒之间的整数
 - 视频清晰度：`480p`、`720p`
 - 画面比例：`16:9`、`9:16`、`1:1`、`4:3`、`3:4`、`21:9`
+- 可选生成音频：需要音频时传 `--generate-audio`
 - 本地输出：可下载的视频会保存到 `outputs/`
 - URL 输出：如果视频无法下载，Agent 会返回远程视频 URL
 - 错误提示：未配置 Key、Key 无效、余额不足、图片不可访问、任务超时、任务失败都有明确下一步
@@ -153,6 +154,15 @@ node scripts/hiapi-seedance-2-video.mjs \
   --prompt "The product photo comes alive with soft camera movement and studio lighting" \
   --input-reference "https://example.com/product.jpg" \
   --seconds 5
+```
+
+生成音频：
+
+```bash
+node scripts/hiapi-seedance-2-video.mjs \
+  --prompt "咖啡馆里的温暖场景，带自然环境声" \
+  --seconds 5 \
+  --generate-audio
 ```
 
 ---
@@ -193,6 +203,10 @@ node scripts/hiapi-seedance-2-video.mjs \
 | 任务超时 | 视频可能还在生成中，稍后重试，或生成更短的视频。 |
 | 任务失败 | 换一个更清晰的提示词，或换一张图片。 |
 | 没有视频输出 | 检查任务返回内容；该 skill 期望任务成功后返回视频 URL。 |
+| 有可选更新 | CLI 启动时会检查 HiAPI skills 索引。如果只是建议升级，会打印升级命令并继续执行。 |
+| 必须更新 | CLI 会停止并打印必须执行的升级命令。运行 `npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y` 后重启 Agent。 |
+
+只有在离线或内网环境无法访问 skills 索引时，才建议设置 `HIAPI_SKIP_UPDATE_CHECK=1` 跳过检查。
 
 ---
 

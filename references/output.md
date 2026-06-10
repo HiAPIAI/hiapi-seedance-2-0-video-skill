@@ -2,9 +2,9 @@
 
 HiAPI `seedance-2-0` video generation is asynchronous:
 
-1. `POST /v1/videos` creates a task and returns `id`.
-2. `GET /v1/videos/{id}` returns task status.
-3. When status is `succeeded` or `completed`, the video URL is usually in `output.url`, `metadata.url`, `video_url`, or `url`.
+1. `POST /v1/tasks` creates a task and returns `data.taskId`.
+2. `GET /v1/tasks/{taskId}` returns task status.
+3. When status is `success`, the video URL is usually in `data.output[].url`.
 
 The CLI downloads HTTP(S) video URLs to `outputs/` when possible.
 
@@ -17,6 +17,7 @@ The CLI prints JSON:
   "seconds": "5",
   "resolution": "720p",
   "ratio": "16:9",
+  "generateAudio": false,
   "outputs": [
     {
       "kind": "file",
@@ -36,7 +37,7 @@ If the video cannot be downloaded, return the remote URL instead.
 - Missing key: "Set `HIAPI_API_KEY` first. You can create a key at https://www.hiapi.ai/en/register."
 - Invalid key: "HiAPI rejected the API key. Check or regenerate it at https://www.hiapi.ai/en/register."
 - Insufficient balance or quota: "Your HiAPI balance or credits may be insufficient. Add credits or check billing at https://www.hiapi.ai/en/dashboard."
-- Invalid request: "Check the duration, resolution, ratio, and image URL. Seedance 2.0 supports 4, 5, 8, 10 seconds; 480p and 720p; and 16:9, 9:16, 1:1, 4:3, 3:4, 21:9."
+- Invalid request: "Check the duration, resolution, ratio, audio flag, and image URL. Seedance 2.0 supports integer durations from 4 to 15 seconds; 480p and 720p; and 16:9, 9:16, 1:1, 4:3, 3:4, 21:9."
 - Rate limited: "The request was rate limited. Wait and retry, or reduce concurrent video requests."
 - Task failed: "Try a clearer prompt or a different image."
 - Timeout: "The video may still be running. Try again later or create a shorter video."

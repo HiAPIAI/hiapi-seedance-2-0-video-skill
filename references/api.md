@@ -2,11 +2,11 @@
 
 ## Endpoint
 
-`seedance-2-0` uses HiAPI's video endpoint:
+`seedance-2-0` uses HiAPI's unified async task API:
 
 ```text
-POST https://api.hiapi.ai/v1/videos
-GET https://api.hiapi.ai/v1/videos/{id}
+POST https://api.hiapi.ai/v1/tasks
+GET https://api.hiapi.ai/v1/tasks/{taskId}
 ```
 
 Set `HIAPI_BASE_URL` to override the host.
@@ -42,10 +42,13 @@ Text-to-video:
 ```json
 {
   "model": "seedance-2-0",
-  "prompt": "A cinematic ocean cliff shot at golden hour",
-  "seconds": "5",
-  "resolution": "720p",
-  "ratio": "16:9"
+  "input": {
+    "prompt": "A cinematic ocean cliff shot at golden hour",
+    "duration": 5,
+    "resolution": "720p",
+    "aspect_ratio": "16:9",
+    "generate_audio": false
+  }
 }
 ```
 
@@ -54,11 +57,14 @@ Image-to-video:
 ```json
 {
   "model": "seedance-2-0",
-  "prompt": "The product photo comes alive with soft camera movement",
-  "input_reference": "https://example.com/product.jpg",
-  "seconds": "5",
-  "resolution": "720p",
-  "ratio": "16:9"
+  "input": {
+    "prompt": "The product photo comes alive with soft camera movement",
+    "first_frame_url": "https://example.com/product.jpg",
+    "duration": 5,
+    "resolution": "720p",
+    "aspect_ratio": "16:9",
+    "generate_audio": false
+  }
 }
 ```
 
@@ -66,10 +72,12 @@ Image-to-video:
 
 | Parameter | Required | Notes |
 | --- | --- | --- |
-| `prompt` | yes | Text video instruction. Describe the subject, motion, camera movement, mood, and sound atmosphere. |
-| `seconds` | no | `4`, `5`, `8`, or `10`. Defaults to `5`. |
-| `resolution` | no | `480p` or `720p`. Defaults to `720p`. |
-| `ratio` | no | `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, or `21:9`. Defaults to `16:9`. |
-| `input_reference` | no | Public image URL or data URI for image-to-video. |
+| `model` | yes | Must be `seedance-2-0`. |
+| `input.prompt` | yes | Text video instruction. Describe the subject, motion, camera movement, mood, and sound atmosphere. |
+| `input.duration` | no | Integer seconds from `4` to `15`. Defaults to `5`. |
+| `input.resolution` | no | `480p` or `720p`. Defaults to `720p`. |
+| `input.aspect_ratio` | no | `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, or `21:9`. Defaults to `16:9`. |
+| `input.first_frame_url` | no | Public image URL or data URI for image-to-video. |
+| `input.generate_audio` | no | Boolean. Defaults to `false`; set `true` only when generated audio is desired. |
 
-Seedance 2.0 supports text-to-video without an image. When `input_reference` is provided, the image becomes the starting frame.
+Seedance 2.0 supports text-to-video without an image. When `input.first_frame_url` is provided, the image becomes the starting frame. The CLI accepts `--input-reference` and maps it to `input.first_frame_url`.

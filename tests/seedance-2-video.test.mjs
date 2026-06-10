@@ -4,6 +4,8 @@ import { test } from "node:test";
 import {
   buildHttpErrorMessage,
   buildVideoPayload,
+  checkSkillUpdate,
+  compareVersions,
   extractTaskId,
   extractVideoUrl,
   normalizeRatio,
@@ -23,10 +25,13 @@ test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
     }),
     {
       model: "seedance-2-0",
-      prompt: "A cinematic ocean cliff shot at golden hour",
-      seconds: "5",
-      resolution: "720p",
-      ratio: "16:9",
+      input: {
+        prompt: "A cinematic ocean cliff shot at golden hour",
+        duration: 5,
+        resolution: "720p",
+        aspect_ratio: "16:9",
+        generate_audio: false,
+      },
     },
   );
 });
@@ -38,16 +43,18 @@ test("adds input_reference only when an image is provided", () => {
   });
 
   assert.equal(payload.model, "seedance-2-0");
-  assert.equal(payload.seconds, "5");
-  assert.equal(payload.resolution, "720p");
-  assert.equal(payload.ratio, "16:9");
-  assert.equal(payload.input_reference, "https://example.com/product.png");
+  assert.equal(payload.input.duration, 5);
+  assert.equal(payload.input.resolution, "720p");
+  assert.equal(payload.input.aspect_ratio, "16:9");
+  assert.equal(payload.input.first_frame_url, "https://example.com/product.png");
+  assert.equal(payload.input.generate_audio, false);
 });
 
 test("validates duration, resolution, and ratio before sending a request", () => {
   assert.equal(normalizeSeconds("4"), "4");
-  assert.equal(normalizeSeconds(10), "10");
-  assert.throws(() => normalizeSeconds("12"), /Unsupported duration/);
+  assert.equal(normalizeSeconds(15), "15");
+  assert.throws(() => normalizeSeconds("3"), /Unsupported duration/);
+  assert.throws(() => normalizeSeconds("16"), /Unsupported duration/);
 
   assert.equal(normalizeResolution("480p"), "480p");
   assert.equal(normalizeResolution("720P"), "720p");
@@ -57,12 +64,22 @@ test("validates duration, resolution, and ratio before sending a request", () =>
   assert.throws(() => normalizeRatio("2:1"), /Unsupported ratio/);
 });
 
+test("supports generate_audio when requested", () => {
+  const payload = buildVideoPayload({
+    prompt: "A coffee shop scene with natural background sound",
+    generateAudio: true,
+  });
+
+  assert.equal(payload.input.generate_audio, true);
+});
+
 test("extracts task ids and video URLs from common HiAPI response shapes", () => {
+  assert.equal(extractTaskId({ data: { taskId: "tk-hiapi-123" } }), "tk-hiapi-123");
   assert.equal(extractTaskId({ id: "video_task_123" }), "video_task_123");
   assert.equal(extractTaskId({ task_id: "task_456" }), "task_456");
 
   assert.equal(
-    extractVideoUrl({ output: { url: "https://cdn.example.com/out.mp4" } }),
+    extractVideoUrl({ data: { output: [{ type: "video", url: "https://cdn.example.com/out.mp4" }] } }),
     "https://cdn.example.com/out.mp4",
   );
   assert.equal(
@@ -104,7 +121,7 @@ test("buildHttpErrorMessage gives next actions for key, balance, image, rate, an
   );
   assert.match(
     buildHttpErrorMessage(400, { error: { message: "input_reference is invalid" } }),
-    /duration, resolution, ratio, and image URL/i,
+    /duration, resolution, ratio, audio flag, and image URL/i,
   );
   assert.match(
     buildHttpErrorMessage(429, { error: { message: "Too many requests" } }),
@@ -127,4 +144,36 @@ test("returns null when remote video download fails", async () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("compares semver-like skill versions", () => {
+  assert.equal(compareVersions("0.1.0", "0.1.0"), 0);
+  assert.equal(compareVersions("0.2.0", "0.1.9"), 1);
+  assert.equal(compareVersions("0.1.0", "0.2.0"), -1);
+});
+
+test("reports soft and required skill updates from the manifest", async () => {
+  const manifest = {
+    skills: [{
+      id: "hiapi-seedance-2-0-video",
+      version: "0.3.0",
+      updatePolicy: {
+        latestVersion: "0.3.0",
+        minimumVersion: "0.2.0",
+        updateCommand: "npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y",
+        notice: "New version available.",
+        requiredNotice: "Update required.",
+      },
+    }],
+  };
+  const fetchImpl = async () => new Response(JSON.stringify(manifest), { status: 200 });
+
+  const required = await checkSkillUpdate({ currentVersion: "0.1.0", fetchImpl });
+  assert.equal(required.status, "required");
+  assert.match(required.message, /Update required/);
+  assert.match(required.message, /Update now: npx -y github:HiAPIAI\/hiapi-seedance-2-0-video-skill -y/);
+
+  const available = await checkSkillUpdate({ currentVersion: "0.2.0", fetchImpl });
+  assert.equal(available.status, "available");
+  assert.match(available.message, /New version available/);
 });
