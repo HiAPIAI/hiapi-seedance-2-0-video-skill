@@ -8,9 +8,11 @@ import {
   compareVersions,
   extractTaskId,
   extractVideoUrl,
+  normalizeMediaOptions,
   normalizeRatio,
   normalizeResolution,
   normalizeSeconds,
+  parseArgs,
   resolveConfig,
   saveVideoOutput,
 } from "../scripts/lib/seedance-2-video.mjs";
@@ -50,6 +52,106 @@ test("adds input_reference only when an image is provided", () => {
   assert.equal(payload.input.generate_audio, false);
 });
 
+test("supports first and last frame image-to-video mode", () => {
+  const payload = buildVideoPayload({
+    prompt: "Move from the first frame to the final product hero shot",
+    firstFrameUrl: "asset://first",
+    lastFrameUrl: "asset://last",
+    resolution: "1080p",
+    ratio: "adaptive",
+  });
+
+  assert.equal(payload.input.first_frame_url, "asset://first");
+  assert.equal(payload.input.last_frame_url, "asset://last");
+  assert.equal(payload.input.resolution, "1080p");
+  assert.equal(payload.input.aspect_ratio, "adaptive");
+});
+
+test("supports multimodal reference mode with validation durations", () => {
+  const payload = buildVideoPayload({
+    prompt: "Use the product images, motion reference, and audio reference to create a commercial",
+    referenceImageUrls: ["asset://image-1", "asset://image-2"],
+    referenceVideoUrls: ["asset://video-1", "asset://video-2"],
+    referenceVideoDurations: [6, 7],
+    referenceAudioUrls: ["asset://audio-1"],
+    referenceAudioDurations: [10],
+    returnLastFrame: true,
+    webSearch: true,
+    nsfwChecker: true,
+  });
+
+  assert.deepEqual(payload.input.reference_image_urls, ["asset://image-1", "asset://image-2"]);
+  assert.deepEqual(payload.input.reference_video_urls, ["asset://video-1", "asset://video-2"]);
+  assert.deepEqual(payload.input.reference_audio_urls, ["asset://audio-1"]);
+  assert.equal(payload.input.return_last_frame, true);
+  assert.equal(payload.input.web_search, true);
+  assert.equal(payload.input.nsfw_checker, true);
+});
+
+test("rejects mutually exclusive Seedance media modes", () => {
+  assert.throws(
+    () => buildVideoPayload({
+      prompt: "Invalid mix",
+      firstFrameUrl: "asset://first",
+      referenceImageUrls: ["asset://ref"],
+    }),
+    /mutually exclusive/i,
+  );
+  assert.throws(
+    () => buildVideoPayload({
+      prompt: "Last only",
+      lastFrameUrl: "asset://last",
+    }),
+    /requires a first frame/i,
+  );
+});
+
+test("validates Seedance reference material limits", () => {
+  assert.throws(
+    () => normalizeMediaOptions({
+      referenceImageUrls: Array.from({ length: 10 }, (_, index) => `asset://image-${index}`),
+    }),
+    /at most 9 images/i,
+  );
+  assert.throws(
+    () => normalizeMediaOptions({
+      referenceVideoUrls: ["asset://v1", "asset://v2", "asset://v3", "asset://v4"],
+      referenceVideoDurations: [3, 3, 3, 3],
+    }),
+    /at most 3 reference videos/i,
+  );
+  assert.throws(
+    () => normalizeMediaOptions({
+      referenceAudioUrls: ["asset://a1", "asset://a2", "asset://a3", "asset://a4"],
+      referenceAudioDurations: [3, 3, 3, 3],
+    }),
+    /at most 3 reference audio/i,
+  );
+});
+
+test("validates Seedance reference video and audio durations", () => {
+  assert.throws(
+    () => normalizeMediaOptions({
+      referenceVideoUrls: ["asset://v1"],
+    }),
+    /reference-video-duration/i,
+  );
+  assert.throws(
+    () => normalizeMediaOptions({
+      referenceVideoUrls: ["asset://v1"],
+      referenceVideoDurations: [1],
+    }),
+    /must be 2-15 seconds/i,
+  );
+  assert.throws(
+    () => normalizeMediaOptions({
+      referenceAudioUrls: ["asset://a1", "asset://a2"],
+      referenceAudioDurations: [8, 8],
+    }),
+    /total duration must not exceed 15 seconds/i,
+  );
+});
+
 test("validates duration, resolution, and ratio before sending a request", () => {
   assert.equal(normalizeSeconds("4"), "4");
   assert.equal(normalizeSeconds(15), "15");
@@ -58,10 +160,38 @@ test("validates duration, resolution, and ratio before sending a request", () =>
 
   assert.equal(normalizeResolution("480p"), "480p");
   assert.equal(normalizeResolution("720P"), "720p");
-  assert.throws(() => normalizeResolution("1080P"), /Unsupported resolution/);
+  assert.equal(normalizeResolution("1080P"), "1080p");
 
   assert.equal(normalizeRatio("9:16"), "9:16");
+  assert.equal(normalizeRatio("adaptive"), "adaptive");
   assert.throws(() => normalizeRatio("2:1"), /Unsupported ratio/);
+});
+
+test("parses repeatable multimodal reference arguments", () => {
+  assert.deepEqual(
+    parseArgs([
+      "--prompt", "Use refs",
+      "--reference-image-url", "asset://i1,asset://i2",
+      "--reference-video-url", "asset://v1",
+      "--reference-video-duration", "6",
+      "--reference-audio-url", "asset://a1",
+      "--reference-audio-duration", "4",
+      "--return-last-frame",
+      "--web-search",
+      "--nsfw-checker",
+    ]),
+    {
+      prompt: "Use refs",
+      referenceImageUrls: ["asset://i1,asset://i2"],
+      referenceVideoUrls: ["asset://v1"],
+      referenceVideoDurations: ["6"],
+      referenceAudioUrls: ["asset://a1"],
+      referenceAudioDurations: ["4"],
+      returnLastFrame: true,
+      webSearch: true,
+      nsfwChecker: true,
+    },
+  );
 });
 
 test("supports generate_audio when requested", () => {
@@ -121,7 +251,7 @@ test("buildHttpErrorMessage gives next actions for key, balance, image, rate, an
   );
   assert.match(
     buildHttpErrorMessage(400, { error: { message: "input_reference is invalid" } }),
-    /duration, resolution, ratio, audio flag, and image URL/i,
+    /media mode, reference counts, and reference audio\/video durations/i,
   );
   assert.match(
     buildHttpErrorMessage(429, { error: { message: "Too many requests" } }),

@@ -71,8 +71,10 @@ Image-to-video:
 ```bash
 node scripts/hiapi-seedance-2-video.mjs \
   --prompt "The product photo comes alive with soft camera movement" \
-  --input-reference "https://example.com/product.jpg"
+  --first-frame-url "https://example.com/product.jpg"
 ```
+
+First+last-frame image-to-video uses `--first-frame-url` and `--last-frame-url`. Multimodal reference mode uses `--reference-image-url`, `--reference-video-url`, and/or `--reference-audio-url`; do not mix it with first/last-frame fields. For reference video/audio, pass one duration flag per URL so the CLI can enforce each clip at 2-15 seconds and total duration at most 15 seconds.
 
 ## Routing
 
@@ -89,7 +91,7 @@ When this skill is used:
 5. Return the generated video file path or remote URL.
 6. If generation fails, return the HTTP status and compact error message.
 7. If the error mentions balance, credits, quota, HTTP 402, or HTTP 403 with quota text, tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard.
-8. If the error is HTTP 400, tell the user to check the duration, resolution, ratio, and image URL.
+8. If the error is HTTP 400, tell the user to check duration, resolution, ratio, media mode, reference counts, and reference audio/video durations.
 9. If the error is HTTP 429, tell the user to wait and retry.
 10. If the task fails or times out, ask the user to try a clearer prompt or a different image.
 11. If the CLI prints "A newer HiAPI skill is available", show the update command but continue with the current result.

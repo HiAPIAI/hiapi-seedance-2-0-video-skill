@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 export const MODEL = "seedance-2-0";
 export const SKILL_ID = "hiapi-seedance-2-0-video";
-export const SKILL_VERSION = "0.1.1";
+export const SKILL_VERSION = "0.1.2";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_SECONDS = "5";
@@ -19,8 +19,14 @@ export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
 
 export const MIN_SECONDS = 4;
 export const MAX_SECONDS = 15;
-export const SUPPORTED_RESOLUTIONS = new Set(["480p", "720p"]);
-export const SUPPORTED_RATIOS = new Set(["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"]);
+export const SUPPORTED_RESOLUTIONS = new Set(["480p", "720p", "1080p"]);
+export const SUPPORTED_RATIOS = new Set(["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"]);
+export const MAX_REFERENCE_IMAGES_WITH_FRAMES = 9;
+export const MAX_REFERENCE_VIDEO_COUNT = 3;
+export const MAX_REFERENCE_AUDIO_COUNT = 3;
+export const MIN_REFERENCE_MEDIA_SECONDS = 2;
+export const MAX_REFERENCE_MEDIA_SECONDS = 15;
+export const MAX_REFERENCE_MEDIA_TOTAL_SECONDS = 15;
 
 export function resolveConfig(env = process.env) {
   const apiKey = env.HIAPI_API_KEY?.trim();
@@ -61,11 +67,39 @@ export function normalizeRatio(value = DEFAULT_RATIO) {
   return ratio;
 }
 
-export function buildVideoPayload({ prompt, seconds, resolution, ratio, inputReference, generateAudio = false } = {}) {
+export function buildVideoPayload({
+  prompt,
+  seconds,
+  resolution,
+  ratio,
+  inputReference,
+  firstFrameUrl,
+  lastFrameUrl,
+  referenceImageUrls,
+  referenceVideoUrls,
+  referenceAudioUrls,
+  referenceVideoDurations,
+  referenceAudioDurations,
+  returnLastFrame,
+  generateAudio = false,
+  webSearch,
+  nsfwChecker,
+} = {}) {
   const cleanPrompt = String(prompt || "").trim();
   if (!cleanPrompt) {
     throw new Error("A prompt is required.");
   }
+
+  const media = normalizeMediaOptions({
+    inputReference,
+    firstFrameUrl,
+    lastFrameUrl,
+    referenceImageUrls,
+    referenceVideoUrls,
+    referenceAudioUrls,
+    referenceVideoDurations,
+    referenceAudioDurations,
+  });
 
   const payload = {
     model: MODEL,
@@ -78,9 +112,120 @@ export function buildVideoPayload({ prompt, seconds, resolution, ratio, inputRef
     },
   };
 
-  const reference = String(inputReference || "").trim();
-  if (reference) payload.input.first_frame_url = reference;
+  if (media.firstFrameUrl) payload.input.first_frame_url = media.firstFrameUrl;
+  if (media.lastFrameUrl) payload.input.last_frame_url = media.lastFrameUrl;
+  if (media.referenceImageUrls.length > 0) payload.input.reference_image_urls = media.referenceImageUrls;
+  if (media.referenceVideoUrls.length > 0) payload.input.reference_video_urls = media.referenceVideoUrls;
+  if (media.referenceAudioUrls.length > 0) payload.input.reference_audio_urls = media.referenceAudioUrls;
+  if (returnLastFrame !== undefined) payload.input.return_last_frame = normalizeBoolean(returnLastFrame, "return_last_frame");
+  if (webSearch !== undefined) payload.input.web_search = normalizeBoolean(webSearch, "web_search");
+  if (nsfwChecker !== undefined) payload.input.nsfw_checker = normalizeBoolean(nsfwChecker, "nsfw_checker");
   return payload;
+}
+
+export function normalizeMediaOptions({
+  inputReference,
+  firstFrameUrl,
+  lastFrameUrl,
+  referenceImageUrls,
+  referenceVideoUrls,
+  referenceAudioUrls,
+  referenceVideoDurations,
+  referenceAudioDurations,
+} = {}) {
+  const resolvedFirstFrameUrl = firstNonEmpty(firstFrameUrl, inputReference);
+  const resolvedLastFrameUrl = firstNonEmpty(lastFrameUrl);
+  const imageUrls = normalizeUrlList(referenceImageUrls);
+  const videoUrls = normalizeUrlList(referenceVideoUrls);
+  const audioUrls = normalizeUrlList(referenceAudioUrls);
+  const hasFrameMode = Boolean(resolvedFirstFrameUrl || resolvedLastFrameUrl);
+  const hasMultimodalReferences = imageUrls.length > 0 || videoUrls.length > 0 || audioUrls.length > 0;
+
+  if (resolvedLastFrameUrl && !resolvedFirstFrameUrl) {
+    throw new Error("Seedance 2.0 last-frame mode requires a first frame. Provide --first-frame-url together with --last-frame-url.");
+  }
+  if (hasFrameMode && hasMultimodalReferences) {
+    throw new Error("Seedance 2.0 media modes are mutually exclusive: first-frame / first+last-frame image-to-video cannot be mixed with reference_image_urls, reference_video_urls, or reference_audio_urls.");
+  }
+
+  const frameCount = [resolvedFirstFrameUrl, resolvedLastFrameUrl].filter(Boolean).length;
+  if (frameCount + imageUrls.length > MAX_REFERENCE_IMAGES_WITH_FRAMES) {
+    throw new Error(`Seedance 2.0 accepts at most ${MAX_REFERENCE_IMAGES_WITH_FRAMES} images total across first/last frames and reference_image_urls.`);
+  }
+  if (videoUrls.length > MAX_REFERENCE_VIDEO_COUNT) {
+    throw new Error(`Seedance 2.0 accepts at most ${MAX_REFERENCE_VIDEO_COUNT} reference videos.`);
+  }
+  if (audioUrls.length > MAX_REFERENCE_AUDIO_COUNT) {
+    throw new Error(`Seedance 2.0 accepts at most ${MAX_REFERENCE_AUDIO_COUNT} reference audio clips.`);
+  }
+
+  validateTimedReferences("reference video", videoUrls, referenceVideoDurations);
+  validateTimedReferences("reference audio", audioUrls, referenceAudioDurations);
+
+  return {
+    firstFrameUrl: resolvedFirstFrameUrl,
+    lastFrameUrl: resolvedLastFrameUrl,
+    referenceImageUrls: imageUrls,
+    referenceVideoUrls: videoUrls,
+    referenceAudioUrls: audioUrls,
+  };
+}
+
+export function normalizeUrlList(value) {
+  if (value === undefined || value === null || value === "") return [];
+  const raw = Array.isArray(value) ? value : [value];
+  return raw
+    .flatMap((entry) => String(entry).split(","))
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+export function normalizeDurationList(value) {
+  if (value === undefined || value === null || value === "") return [];
+  const raw = Array.isArray(value) ? value : [value];
+  return raw
+    .flatMap((entry) => String(entry).split(","))
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const numeric = Number(entry);
+      if (!Number.isFinite(numeric)) {
+        throw new Error(`Reference media duration "${entry}" must be a number of seconds.`);
+      }
+      return numeric;
+    });
+}
+
+function validateTimedReferences(label, urls, durations) {
+  if (urls.length === 0) return;
+  const normalizedDurations = normalizeDurationList(durations);
+  if (normalizedDurations.length !== urls.length) {
+    throw new Error(`Provide one --${label.replace(" ", "-")}-duration value for each ${label} URL so the skill can validate 2-15 second clips and the 15 second total limit.`);
+  }
+  const total = normalizedDurations.reduce((sum, duration) => sum + duration, 0);
+  for (const duration of normalizedDurations) {
+    if (duration < MIN_REFERENCE_MEDIA_SECONDS || duration > MAX_REFERENCE_MEDIA_SECONDS) {
+      throw new Error(`Each Seedance 2.0 ${label} must be ${MIN_REFERENCE_MEDIA_SECONDS}-${MAX_REFERENCE_MEDIA_SECONDS} seconds.`);
+    }
+  }
+  if (total > MAX_REFERENCE_MEDIA_TOTAL_SECONDS) {
+    throw new Error(`Seedance 2.0 ${label} total duration must not exceed ${MAX_REFERENCE_MEDIA_TOTAL_SECONDS} seconds.`);
+  }
+}
+
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    const normalized = String(value || "").trim();
+    if (normalized) return normalized;
+  }
+  return "";
+}
+
+function normalizeBoolean(value, field) {
+  if (typeof value === "boolean") return value;
+  if (value === "true" || value === "1") return true;
+  if (value === "false" || value === "0") return false;
+  throw new Error(`${field} must be a boolean.`);
 }
 
 export function extractTaskId(response) {
@@ -125,7 +270,7 @@ export function buildHttpErrorMessage(status, body) {
   }
 
   if (status === 400 || lowerSummary.includes("input_reference") || lowerSummary.includes("invalid")) {
-    return `${prefix}\nCheck the duration, resolution, ratio, audio flag, and image URL. Seedance 2.0 supports integer durations from 4 to 15 seconds; resolutions 480p, 720p; and ratios 16:9, 9:16, 1:1, 4:3, 3:4, 21:9.`;
+    return `${prefix}\nCheck duration, resolution, ratio, audio flag, media mode, reference counts, and reference audio/video durations. Seedance 2.0 supports integer durations from 4 to 15 seconds; resolutions 480p, 720p, 1080p; ratios 16:9, 9:16, 1:1, 4:3, 3:4, 21:9, adaptive; mutually exclusive first-frame, first+last-frame, or multimodal reference modes.`;
   }
 
   if (status === 429 || lowerSummary.includes("rate limit") || lowerSummary.includes("too many")) {
@@ -279,13 +424,37 @@ export function parseArgs(argv) {
     } else if (arg === "--ratio") {
       options.ratio = next;
       index += 1;
-    } else if (arg === "--input-reference" || arg === "--image-url") {
+    } else if (arg === "--input-reference" || arg === "--image-url" || arg === "--first-frame-url") {
       options.inputReference = next;
+      index += 1;
+    } else if (arg === "--last-frame-url") {
+      options.lastFrameUrl = next;
+      index += 1;
+    } else if (arg === "--reference-image-url" || arg === "--reference-image-urls") {
+      pushOption(options, "referenceImageUrls", next);
+      index += 1;
+    } else if (arg === "--reference-video-url" || arg === "--reference-video-urls") {
+      pushOption(options, "referenceVideoUrls", next);
+      index += 1;
+    } else if (arg === "--reference-audio-url" || arg === "--reference-audio-urls") {
+      pushOption(options, "referenceAudioUrls", next);
+      index += 1;
+    } else if (arg === "--reference-video-duration" || arg === "--reference-video-durations") {
+      pushOption(options, "referenceVideoDurations", next);
+      index += 1;
+    } else if (arg === "--reference-audio-duration" || arg === "--reference-audio-durations") {
+      pushOption(options, "referenceAudioDurations", next);
       index += 1;
     } else if (arg === "--generate-audio") {
       options.generateAudio = true;
     } else if (arg === "--no-audio") {
       options.generateAudio = false;
+    } else if (arg === "--return-last-frame") {
+      options.returnLastFrame = true;
+    } else if (arg === "--web-search") {
+      options.webSearch = true;
+    } else if (arg === "--nsfw-checker") {
+      options.nsfwChecker = true;
     } else if (arg === "--output-dir") {
       options.outputDir = next;
       index += 1;
@@ -302,6 +471,11 @@ export function parseArgs(argv) {
   return options;
 }
 
+function pushOption(options, key, value) {
+  if (!options[key]) options[key] = [];
+  options[key].push(value);
+}
+
 export function usage() {
   return `Usage:
   node scripts/hiapi-seedance-2-video.mjs --prompt "A cinematic ocean cliff shot" [--seconds 5] [--resolution 720p] [--ratio 16:9]
@@ -309,15 +483,33 @@ export function usage() {
 Options:
   --prompt <text>              Required video description
   --seconds <4-15>             Integer seconds. Default: 5
-  --resolution <480p|720p>    Default: 720p
-  --ratio <16:9|9:16|1:1|4:3|3:4|21:9>
+  --resolution <480p|720p|1080p>
+                              Default: 720p
+  --ratio <16:9|9:16|1:1|4:3|3:4|21:9|adaptive>
                               Default: 16:9
-  --input-reference <url>      Optional image URL or data URI for image-to-video
+  --input-reference <url>      Alias for --first-frame-url
+  --first-frame-url <url>      Optional first-frame image URL or asset:// id
+  --last-frame-url <url>       Optional last-frame image URL or asset:// id
+  --reference-image-url <url>  Repeatable. Multimodal reference image URL or asset:// id
+  --reference-video-url <url>  Repeatable. Multimodal reference video URL or asset:// id
+  --reference-video-duration <seconds>
+                              Repeat once per reference video. Each 2-15s, total <=15s
+  --reference-audio-url <url>  Repeatable. Multimodal reference audio URL or asset:// id
+  --reference-audio-duration <seconds>
+                              Repeat once per reference audio. Each 2-15s, total <=15s
   --generate-audio             Ask the model to generate audio when supported
   --no-audio                   Disable generated audio. Default
+  --return-last-frame          Return the generated video's last frame when supported
+  --web-search                 Enable web search when supported
+  --nsfw-checker               Enable content checking when supported
   --output-dir <path>          Default: outputs
   --no-save                    Return the remote video URL without downloading
   --no-wait                    Create the task and return the task id
+
+Media modes are mutually exclusive:
+  1. first-frame image-to-video
+  2. first+last-frame image-to-video
+  3. multimodal references via reference image/video/audio URLs
 `;
 }
 

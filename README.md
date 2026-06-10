@@ -118,8 +118,9 @@ Ask your AI Agent to generate a video with natural language. If you provide an i
 - Text-to-video: describe a scene, camera movement, mood, and sound atmosphere
 - Image-to-video: provide a public image URL or data URI and describe how it should move
 - Durations: any integer from `4` to `15` seconds
-- Resolutions: `480p`, `720p`
-- Ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
+- Resolutions: `480p`, `720p`, `1080p`
+- Ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`, `adaptive`
+- Media modes: text-to-video, first-frame image-to-video, first+last-frame image-to-video, or multimodal references
 - Optional generated audio: pass `--generate-audio` when audio is needed
 - Local output: videos are saved to `outputs/` when the result can be downloaded
 - URL output: if the video cannot be downloaded, the Agent returns the remote video URL
@@ -152,7 +153,17 @@ Image-to-video:
 ```bash
 node scripts/hiapi-seedance-2-video.mjs \
   --prompt "The product photo comes alive with soft camera movement and studio lighting" \
-  --input-reference "https://example.com/product.jpg" \
+  --first-frame-url "https://example.com/product.jpg" \
+  --seconds 5
+```
+
+First+last-frame image-to-video:
+
+```bash
+node scripts/hiapi-seedance-2-video.mjs \
+  --prompt "Animate from the first frame to the final hero frame" \
+  --first-frame-url "asset://first-frame" \
+  --last-frame-url "asset://last-frame" \
   --seconds 5
 ```
 
@@ -164,6 +175,27 @@ node scripts/hiapi-seedance-2-video.mjs \
   --seconds 5 \
   --generate-audio
 ```
+
+Multimodal reference mode:
+
+```bash
+node scripts/hiapi-seedance-2-video.mjs \
+  --prompt "Use the reference images, video motion, and audio mood to create a product spot" \
+  --reference-image-url "asset://image-1" \
+  --reference-video-url "asset://video-1" \
+  --reference-video-duration 6 \
+  --reference-audio-url "asset://audio-1" \
+  --reference-audio-duration 5 \
+  --seconds 5
+```
+
+Media modes are mutually exclusive: first-frame image-to-video, first+last-frame image-to-video, and multimodal reference mode cannot be mixed in one request. If you need strict first and last frames, use first+last-frame mode. If you need references plus a start/end idea, describe which reference should act as the first or last frame in the prompt.
+
+Reference material limits:
+
+- `reference_image_urls` plus first/last-frame images: at most 9 images total.
+- `reference_video_urls`: at most 3 videos; each 2-15 seconds; total duration at most 15 seconds.
+- `reference_audio_urls`: at most 3 audio clips; each 2-15 seconds; total duration at most 15 seconds.
 
 ---
 
@@ -198,7 +230,7 @@ node scripts/hiapi-seedance-2-video.mjs \
 | `HIAPI_API_KEY is required` | Create a Key at [Get API Key](https://www.hiapi.ai/en/register), then set `HIAPI_API_KEY`. |
 | `401 Unauthorized` | Check whether the API Key is correct, or generate a new Key. |
 | `402 Payment Required` / `403` quota / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
-| `400 Bad Request` | Check the duration, resolution, ratio, and image URL. |
+| `400 Bad Request` | Check duration, resolution, ratio, media mode, reference counts, and reference audio/video durations. |
 | `429 Too Many Requests` | Wait and retry, or reduce concurrent generation requests. |
 | Task timed out | The video may still be running. Try again later or create a shorter video. |
 | Task failed | Try a clearer prompt or a different image. |
