@@ -105,12 +105,13 @@ with:
     "return_last_frame": false,
     "web_search": false,
     "nsfw_checker": false,
-    "generate_audio": false
+    "generate_audio": true,
+    "seed": 12345
   }
 }
 ```
 
-`first_frame_url` is optional. The CLI still accepts `--input-reference` as a convenience alias, then sends it as `input.first_frame_url`. Do not include `reference_*_urls` in the same request as first/last-frame fields. `generate_audio` defaults to `false`; pass `--generate-audio` only when the user wants generated audio.
+`first_frame_url` is optional. The CLI still accepts `--input-reference` as a convenience alias, then sends it as `input.first_frame_url`. Do not include `reference_*_urls` in the same request as first/last-frame fields. `generate_audio` is omitted from the request unless explicitly set — the API default is `true` (audio on); pass `--no-audio` (or `--no-generate-audio`) to disable it, `--generate-audio` to force it on. `seed` is an optional integer from 0 to 2147483647 for reproducible generation; it is omitted unless `--seed` is passed.
 
 For details, read `references/api.md` and `references/output.md`.
 

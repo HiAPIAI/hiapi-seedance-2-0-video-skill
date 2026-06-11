@@ -121,7 +121,8 @@ Ask your AI Agent to generate a video with natural language. If you provide an i
 - Resolutions: `480p`, `720p`, `1080p`
 - Ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`, `adaptive`
 - Media modes: text-to-video, first-frame image-to-video, first+last-frame image-to-video, or multimodal references
-- Optional generated audio: pass `--generate-audio` when audio is needed
+- Generated audio is on by default (API default); pass `--no-audio` to disable, `--generate-audio` to force on
+- Reproducible output: pass `--seed <0-2147483647>`
 - Local output: videos are saved to `outputs/` when the result can be downloaded
 - URL output: if the video cannot be downloaded, the Agent returns the remote video URL
 - Clear errors: missing Key, invalid Key, insufficient balance, invalid image URL, task timeout, and task failure all include a next step

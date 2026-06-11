@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 export const MODEL = "seedance-2-0";
 export const SKILL_ID = "hiapi-seedance-2-0-video";
-export const SKILL_VERSION = "0.1.3";
+export const SKILL_VERSION = "0.1.4";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_SECONDS = "5";
@@ -27,6 +27,8 @@ export const MAX_REFERENCE_AUDIO_COUNT = 3;
 export const MIN_REFERENCE_MEDIA_SECONDS = 2;
 export const MAX_REFERENCE_MEDIA_SECONDS = 15;
 export const MAX_REFERENCE_MEDIA_TOTAL_SECONDS = 15;
+export const MIN_SEED = 0;
+export const MAX_SEED = 2147483647;
 
 export function resolveConfig(env = process.env) {
   const apiKey = env.HIAPI_API_KEY?.trim();
@@ -67,6 +69,14 @@ export function normalizeRatio(value = DEFAULT_RATIO) {
   return ratio;
 }
 
+export function normalizeSeed(value) {
+  const seed = Number(String(value).trim());
+  if (!Number.isInteger(seed) || seed < MIN_SEED || seed > MAX_SEED) {
+    throw new Error(`Unsupported seed "${value}". Use an integer from ${MIN_SEED} to ${MAX_SEED}.`);
+  }
+  return seed;
+}
+
 export function buildVideoPayload({
   prompt,
   seconds,
@@ -81,9 +91,10 @@ export function buildVideoPayload({
   referenceVideoDurations,
   referenceAudioDurations,
   returnLastFrame,
-  generateAudio = false,
+  generateAudio,
   webSearch,
   nsfwChecker,
+  seed,
 } = {}) {
   const cleanPrompt = String(prompt || "").trim();
   if (!cleanPrompt) {
@@ -108,9 +119,12 @@ export function buildVideoPayload({
       duration: Number(normalizeSeconds(seconds)),
       resolution: normalizeResolution(resolution),
       aspect_ratio: normalizeRatio(ratio),
-      generate_audio: Boolean(generateAudio),
     },
   };
+
+  // Omit generate_audio unless explicitly set so the API default (true) applies.
+  if (generateAudio !== undefined) payload.input.generate_audio = normalizeBoolean(generateAudio, "generate_audio");
+  if (seed !== undefined && seed !== null && seed !== "") payload.input.seed = normalizeSeed(seed);
 
   if (media.firstFrameUrl) payload.input.first_frame_url = media.firstFrameUrl;
   if (media.lastFrameUrl) payload.input.last_frame_url = media.lastFrameUrl;
@@ -478,8 +492,11 @@ export function parseArgs(argv) {
       index += 1;
     } else if (arg === "--generate-audio") {
       options.generateAudio = true;
-    } else if (arg === "--no-audio") {
+    } else if (arg === "--no-audio" || arg === "--no-generate-audio") {
       options.generateAudio = false;
+    } else if (arg === "--seed") {
+      options.seed = next;
+      index += 1;
     } else if (arg === "--return-last-frame") {
       options.returnLastFrame = true;
     } else if (arg === "--web-search") {
@@ -528,8 +545,9 @@ Options:
   --reference-audio-url <url>  Repeatable. Multimodal reference audio URL or asset:// id
   --reference-audio-duration <seconds>
                               Repeat once per reference audio. Each 2-15s, total <=15s
-  --generate-audio             Ask the model to generate audio when supported
-  --no-audio                   Disable generated audio. Default
+  --generate-audio             Explicitly enable generated audio (API default: enabled)
+  --no-audio                   Disable generated audio (alias: --no-generate-audio)
+  --seed <0-2147483647>        Optional integer seed for reproducible generation
   --return-last-frame          Return the generated video's last frame when supported
   --web-search                 Enable web search when supported
   --nsfw-checker               Enable content checking when supported

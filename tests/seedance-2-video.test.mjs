@@ -33,7 +33,6 @@ test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
         duration: 5,
         resolution: "720p",
         aspect_ratio: "16:9",
-        generate_audio: false,
       },
     },
   );
@@ -50,7 +49,7 @@ test("adds input_reference only when an image is provided", () => {
   assert.equal(payload.input.resolution, "720p");
   assert.equal(payload.input.aspect_ratio, "16:9");
   assert.equal(payload.input.first_frame_url, "https://example.com/product.png");
-  assert.equal(payload.input.generate_audio, false);
+  assert.equal("generate_audio" in payload.input, false);
 });
 
 test("supports first and last frame image-to-video mode", () => {
@@ -195,13 +194,46 @@ test("parses repeatable multimodal reference arguments", () => {
   );
 });
 
-test("supports generate_audio when requested", () => {
-  const payload = buildVideoPayload({
+test("supports generate_audio tri-state: omitted by default, explicit true/false", () => {
+  const omitted = buildVideoPayload({
+    prompt: "A coffee shop scene with natural background sound",
+  });
+  assert.equal("generate_audio" in omitted.input, false);
+
+  const enabled = buildVideoPayload({
     prompt: "A coffee shop scene with natural background sound",
     generateAudio: true,
   });
+  assert.equal(enabled.input.generate_audio, true);
 
-  assert.equal(payload.input.generate_audio, true);
+  const disabled = buildVideoPayload({
+    prompt: "A silent product rotation",
+    generateAudio: false,
+  });
+  assert.equal(disabled.input.generate_audio, false);
+});
+
+test("supports seed for reproducible generation and validates its range", () => {
+  const payload = buildVideoPayload({
+    prompt: "A repeatable shot",
+    seed: "12345",
+  });
+  assert.equal(payload.input.seed, 12345);
+
+  const omitted = buildVideoPayload({ prompt: "Random shot" });
+  assert.equal("seed" in omitted.input, false);
+
+  assert.throws(() => buildVideoPayload({ prompt: "Bad seed", seed: "-1" }), /Unsupported seed/);
+  assert.throws(() => buildVideoPayload({ prompt: "Bad seed", seed: "2147483648" }), /Unsupported seed/);
+  assert.throws(() => buildVideoPayload({ prompt: "Bad seed", seed: "1.5" }), /Unsupported seed/);
+});
+
+test("parses audio flags and seed from CLI arguments", () => {
+  assert.deepEqual(parseArgs(["--prompt", "p", "--seed", "42"]), { prompt: "p", seed: "42" });
+  assert.deepEqual(parseArgs(["--prompt", "p", "--generate-audio"]), { prompt: "p", generateAudio: true });
+  assert.deepEqual(parseArgs(["--prompt", "p", "--no-audio"]), { prompt: "p", generateAudio: false });
+  assert.deepEqual(parseArgs(["--prompt", "p", "--no-generate-audio"]), { prompt: "p", generateAudio: false });
+  assert.deepEqual(parseArgs(["--prompt", "p"]), { prompt: "p" });
 });
 
 test("extracts task ids and video URLs from common HiAPI response shapes", () => {
