@@ -46,8 +46,7 @@ Text-to-video:
     "prompt": "A cinematic ocean cliff shot at golden hour",
     "duration": 5,
     "resolution": "720p",
-    "aspect_ratio": "16:9",
-    "generate_audio": false
+    "aspect_ratio": "16:9"
   }
 }
 ```
@@ -62,8 +61,7 @@ Image-to-video:
     "first_frame_url": "https://example.com/product.jpg",
     "duration": 5,
     "resolution": "720p",
-    "aspect_ratio": "16:9",
-    "generate_audio": false
+    "aspect_ratio": "16:9"
   }
 }
 ```
@@ -79,8 +77,7 @@ First+last-frame image-to-video:
     "last_frame_url": "asset://last-frame",
     "duration": 5,
     "resolution": "720p",
-    "aspect_ratio": "16:9",
-    "generate_audio": false
+    "aspect_ratio": "16:9"
   }
 }
 ```
@@ -97,8 +94,7 @@ Multimodal reference mode:
     "reference_audio_urls": ["asset://audio-1"],
     "duration": 5,
     "resolution": "720p",
-    "aspect_ratio": "16:9",
-    "generate_audio": false
+    "aspect_ratio": "16:9"
   }
 }
 ```
@@ -117,9 +113,10 @@ Multimodal reference mode:
 | `input.reference_image_urls` | no | Multimodal reference images. Combined count with first/last frames must not exceed 9 images. Do not mix with first/last-frame fields. |
 | `input.reference_video_urls` | no | Multimodal reference videos. At most 3; each 2-15 seconds; total duration at most 15 seconds. Do not mix with first/last-frame fields. |
 | `input.reference_audio_urls` | no | Multimodal reference audio clips. At most 3; each 2-15 seconds; total duration at most 15 seconds. Do not mix with first/last-frame fields. |
-| `input.generate_audio` | no | Boolean. Defaults to `false`; set `true` only when generated audio is desired. |
+| `input.generate_audio` | no | Boolean. API default is `true` (synchronized audio on). The CLI omits this field unless `--generate-audio` or `--no-audio` is passed. |
 | `input.return_last_frame` | no | Boolean. Return the last frame of the generated video when supported. |
 | `input.web_search` | no | Boolean. Enable web search when supported. |
 | `input.nsfw_checker` | no | Boolean. Enable content checking when supported. |
+| `input.seed` | no | Integer from `0` to `2147483647` for reproducible generation. Omit for a random seed. |
 
 Seedance 2.0 supports text-to-video without media. Three media modes are mutually exclusive: first-frame image-to-video, first+last-frame image-to-video, and multimodal reference generation. The CLI accepts `--input-reference` as a legacy alias for `--first-frame-url`.
