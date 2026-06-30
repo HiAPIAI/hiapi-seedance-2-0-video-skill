@@ -13,6 +13,7 @@ import {
   normalizeRatio,
   normalizeResolution,
   normalizeSeconds,
+  normalizeStorage,
   parseArgs,
   resolveConfig,
   saveVideoOutput,
@@ -36,6 +37,36 @@ test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
       },
     },
   );
+});
+
+test("omits storage by default and adds persistent only when requested", () => {
+  // Default: no top-level storage field (temp is the implicit API default).
+  assert.equal("storage" in buildVideoPayload({ prompt: "p" }), false);
+  assert.equal("storage" in buildVideoPayload({ prompt: "p", storage: "temp" }), false);
+
+  // Persistent surfaces as a top-level field, never inside input.
+  const persistent = buildVideoPayload({ prompt: "p", storage: "persistent" });
+  assert.equal(persistent.storage, "persistent");
+  assert.equal("storage" in persistent.input, false);
+
+  // Case-insensitive; invalid values rejected with cost guidance.
+  assert.equal(buildVideoPayload({ prompt: "p", storage: "Persistent" }).storage, "persistent");
+  assert.throws(() => normalizeStorage("forever"), /Unsupported storage/);
+  assert.throws(() => buildVideoPayload({ prompt: "p", storage: "forever" }), /Unsupported storage/);
+
+  // undefined (flag omitted) falls back to temp; empty string / null are explicit
+  // invalid input and must throw rather than silently coercing to "temp".
+  assert.equal(normalizeStorage(undefined), "temp");
+  assert.equal("storage" in buildVideoPayload({ prompt: "p", storage: undefined }), false);
+  assert.throws(() => normalizeStorage(""), /Unsupported storage/);
+  assert.throws(() => normalizeStorage(null), /Unsupported storage/);
+  assert.throws(() => buildVideoPayload({ prompt: "p", storage: "" }), /Unsupported storage/);
+  assert.throws(() => buildVideoPayload({ prompt: "p", storage: "  " }), /Unsupported storage/);
+});
+
+test("parseArgs reads --storage", () => {
+  assert.equal(parseArgs(["--prompt", "p", "--storage", "persistent"]).storage, "persistent");
+  assert.equal("storage" in parseArgs(["--prompt", "p"]), false);
 });
 
 test("adds input_reference only when an image is provided", () => {
