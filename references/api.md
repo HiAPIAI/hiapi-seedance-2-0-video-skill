@@ -120,3 +120,31 @@ Multimodal reference mode:
 | `input.seed` | no | Integer from `0` to `2147483647` for reproducible generation. Omit for a random seed. |
 
 Seedance 2.0 supports text-to-video without media. Three media modes are mutually exclusive: first-frame image-to-video, first+last-frame image-to-video, and multimodal reference generation. The CLI accepts `--input-reference` as a legacy alias for `--first-frame-url`.
+
+## Production Callbacks (optional)
+
+Video tasks can take a while, so for production HiAPI recommends passing a top-level `callback.url` and waiting for the terminal notification instead of long polling. The CLI flow polls `GET /v1/tasks/{taskId}`, which is best for local debugging, low-volume jobs, or fallback reconciliation if a callback is missed.
+
+```json
+{
+  "model": "seedance-2-0",
+  "input": { "prompt": "...", "duration": 5, "resolution": "720p", "aspect_ratio": "16:9" },
+  "callback": { "url": "https://your-domain.com/hiapi/callback", "when": "final" }
+}
+```
+
+- `callback.url` (required when `callback` is present): HTTPS URL that receives the terminal task notification.
+- `callback.when` (default `final`): both `success` and `fail` are terminal, so deduplicate by `taskId`.
+
+This CLI does not send `callback` itself; it is documented here for users wiring HiAPI into their own backend.
+
+## Output Storage (optional, paid)
+
+Every output is served from HiAPI's CDN as a `url`. **By default outputs are temporary and expire about 7 days after creation; downloads are always free.** If you want to keep specific outputs longer, opt into the persistent storage tier — this is billed:
+
+- Pricing: `$0.05 / GB · month`, charged daily (UTC 00:30) against your HiAPI credit balance. Downloads (egress) stay free. Videos can be large, so watch the bill.
+- Keep at creation: add top-level `"storage": "persistent"` to the Create Task body.
+- Promote/list/delete later with `POST /v1/storages/promote`, `GET /v1/storages`, `POST /v1/storages/delete` (Bearer-authenticated, account-scoped). Deleting stops charges immediately; there is no demote.
+- Default per-account cap is 100 GB; persistent writes past the cap silently fall back to temporary (generation still succeeds).
+
+This skill downloads results locally (a free operation) and defaults to the temporary tier. Pass `--storage persistent` to opt into long-term billed storage (the CLI sends top-level `"storage": "persistent"` and prints a cost notice on stderr). Videos can be large, so mention the cost before suggesting a user turn it on. See https://docs.hiapi.ai/storage/ for full details.

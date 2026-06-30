@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 export const MODEL = "seedance-2-0";
 export const SKILL_ID = "hiapi-seedance-2-0-video";
-export const SKILL_VERSION = "0.1.4";
+export const SKILL_VERSION = "0.1.5";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_SECONDS = "5";
@@ -29,6 +29,11 @@ export const MAX_REFERENCE_MEDIA_SECONDS = 15;
 export const MAX_REFERENCE_MEDIA_TOTAL_SECONDS = 15;
 export const MIN_SEED = 0;
 export const MAX_SEED = 2147483647;
+// Output Storage tier. Default "temp" = free, auto-deleted ~7 days after creation.
+// "persistent" keeps the output long-term and is BILLED ($0.05/GB·month; videos can be
+// large). The payload omits the field for "temp" so the API default (temporary) applies.
+export const DEFAULT_STORAGE = "temp";
+export const SUPPORTED_STORAGE = new Set(["temp", "persistent"]);
 
 export function resolveConfig(env = process.env) {
   const apiKey = env.HIAPI_API_KEY?.trim();
@@ -77,6 +82,20 @@ export function normalizeSeed(value) {
   return seed;
 }
 
+export function normalizeStorage(value = DEFAULT_STORAGE) {
+  // Only an omitted value (undefined) falls back to the default. Empty string / null
+  // are treated as explicit invalid input so a malformed value never silently
+  // resolves to "temp" — it surfaces the same cost-aware error as any bad value.
+  const storage = String(value ?? "").trim().toLowerCase();
+  if (!SUPPORTED_STORAGE.has(storage)) {
+    throw new Error(
+      `Unsupported storage "${storage}". Use one of: ${Array.from(SUPPORTED_STORAGE).join(", ")}. ` +
+        `"persistent" keeps outputs beyond ~7 days and is billed ($0.05/GB·month); see https://docs.hiapi.ai/storage/.`,
+    );
+  }
+  return storage;
+}
+
 export function buildVideoPayload({
   prompt,
   seconds,
@@ -95,6 +114,7 @@ export function buildVideoPayload({
   webSearch,
   nsfwChecker,
   seed,
+  storage,
 } = {}) {
   const cleanPrompt = String(prompt || "").trim();
   if (!cleanPrompt) {
@@ -134,6 +154,10 @@ export function buildVideoPayload({
   if (returnLastFrame !== undefined) payload.input.return_last_frame = normalizeBoolean(returnLastFrame, "return_last_frame");
   if (webSearch !== undefined) payload.input.web_search = normalizeBoolean(webSearch, "web_search");
   if (nsfwChecker !== undefined) payload.input.nsfw_checker = normalizeBoolean(nsfwChecker, "nsfw_checker");
+
+  // storage is a TOP-LEVEL field (sibling of model/input), per HiAPI Output Storage docs.
+  // Only emit it for "persistent"; "temp" is the API default and is left implicit.
+  if (normalizeStorage(storage) === "persistent") payload.storage = "persistent";
   return payload;
 }
 
@@ -375,6 +399,14 @@ export async function waitForVideo(taskId, config = resolveConfig(), options = {
 
 export async function generateVideo(options, config = resolveConfig()) {
   const payload = buildVideoPayload(options);
+
+  // Persistent storage costs money; warn on stderr so stdout stays clean JSON.
+  if (payload.storage === "persistent") {
+    console.error(
+      "Note: --storage persistent keeps this video beyond ~7 days and is billed at $0.05/GB·month (charged daily); videos are large, so watch the bill. Delete it to stop charges. See https://docs.hiapi.ai/storage/",
+    );
+  }
+
   const created = await createVideoTask(payload, config);
   const taskId = extractTaskId(created);
   if (!taskId) {
@@ -382,7 +414,7 @@ export async function generateVideo(options, config = resolveConfig()) {
   }
 
   if (options.wait === false) {
-    return { model: MODEL, taskId, status: "created", outputs: [] };
+    return { model: MODEL, taskId, status: "created", storage: payload.storage ?? "temp", outputs: [] };
   }
 
   const { response, videoUrl } = await waitForVideo(taskId, config, options);
@@ -406,6 +438,7 @@ export async function generateVideo(options, config = resolveConfig()) {
     resolution: payload.input.resolution,
     ratio: payload.input.aspect_ratio,
     generateAudio: payload.input.generate_audio,
+    storage: payload.storage ?? "temp",
     outputs: [output],
     rawStatus: response,
   };
@@ -506,6 +539,9 @@ export function parseArgs(argv) {
     } else if (arg === "--output-dir") {
       options.outputDir = next;
       index += 1;
+    } else if (arg === "--storage") {
+      options.storage = next;
+      index += 1;
     } else if (arg === "--no-save") {
       options.save = false;
     } else if (arg === "--no-wait") {
@@ -552,6 +588,9 @@ Options:
   --web-search                 Enable web search when supported
   --nsfw-checker               Enable content checking when supported
   --output-dir <path>          Default: outputs
+  --storage <temp|persistent>  Default: temp (free, expires ~7 days). "persistent"
+                              keeps the video long-term and is BILLED ($0.05/GB·month;
+                              videos are large). See https://docs.hiapi.ai/storage/
   --no-save                    Return the remote video URL without downloading
   --no-wait                    Create the task and return the task id
 
