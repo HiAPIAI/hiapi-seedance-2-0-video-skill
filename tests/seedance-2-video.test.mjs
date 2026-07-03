@@ -69,6 +69,14 @@ test("parseArgs reads --storage", () => {
   assert.equal("storage" in parseArgs(["--prompt", "p"]), false);
 });
 
+test("builds a 4k payload and normalizes uppercase 4K", () => {
+  const payload = buildVideoPayload({
+    prompt: "A cinematic ocean cliff shot at golden hour",
+    resolution: "4K",
+  });
+  assert.equal(payload.input.resolution, "4k");
+});
+
 test("adds input_reference only when an image is provided", () => {
   const payload = buildVideoPayload({
     prompt: "Make this product photo move with soft studio lighting",
@@ -192,6 +200,10 @@ test("validates duration, resolution, and ratio before sending a request", () =>
   assert.equal(normalizeResolution("480p"), "480p");
   assert.equal(normalizeResolution("720P"), "720p");
   assert.equal(normalizeResolution("1080P"), "1080p");
+  assert.equal(normalizeResolution("4k"), "4k");
+  assert.equal(normalizeResolution("4K"), "4k");
+  assert.throws(() => normalizeResolution("2k"), /Unsupported resolution/);
+  assert.throws(() => normalizeResolution("2160p"), /Unsupported resolution/);
 
   assert.equal(normalizeRatio("9:16"), "9:16");
   assert.equal(normalizeRatio("adaptive"), "adaptive");

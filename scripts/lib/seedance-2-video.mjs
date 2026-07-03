@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 export const MODEL = "seedance-2-0";
 export const SKILL_ID = "hiapi-seedance-2-0-video";
-export const SKILL_VERSION = "0.1.5";
+export const SKILL_VERSION = "0.1.6";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_SECONDS = "5";
@@ -19,7 +19,7 @@ export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
 
 export const MIN_SECONDS = 4;
 export const MAX_SECONDS = 15;
-export const SUPPORTED_RESOLUTIONS = new Set(["480p", "720p", "1080p"]);
+export const SUPPORTED_RESOLUTIONS = new Set(["480p", "720p", "1080p", "4k"]);
 export const SUPPORTED_RATIOS = new Set(["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"]);
 export const MAX_REFERENCE_IMAGES_WITH_FRAMES = 9;
 export const MAX_REFERENCE_VIDEO_COUNT = 3;
@@ -339,7 +339,7 @@ export function buildHttpErrorMessage(status, body) {
   }
 
   if (status === 400 || lowerSummary.includes("input_reference") || lowerSummary.includes("invalid")) {
-    return `${prefix}\nCheck duration, resolution, ratio, audio flag, media mode, reference counts, and reference audio/video durations. Seedance 2.0 supports integer durations from 4 to 15 seconds; resolutions 480p, 720p, 1080p; ratios 16:9, 9:16, 1:1, 4:3, 3:4, 21:9, adaptive; mutually exclusive first-frame, first+last-frame, or multimodal reference modes.`;
+    return `${prefix}\nCheck duration, resolution, ratio, audio flag, media mode, reference counts, and reference audio/video durations. Seedance 2.0 supports integer durations from 4 to 15 seconds; resolutions 480p, 720p, 1080p, 4k; ratios 16:9, 9:16, 1:1, 4:3, 3:4, 21:9, adaptive; mutually exclusive first-frame, first+last-frame, or multimodal reference modes.`;
   }
 
   if (status === 429 || lowerSummary.includes("rate limit") || lowerSummary.includes("too many")) {
@@ -567,7 +567,7 @@ export function usage() {
 Options:
   --prompt <text>              Required video description
   --seconds <4-15>             Integer seconds. Default: 5
-  --resolution <480p|720p|1080p>
+  --resolution <480p|720p|1080p|4k>
                               Default: 720p
   --ratio <16:9|9:16|1:1|4:3|3:4|21:9|adaptive>
                               Default: 16:9

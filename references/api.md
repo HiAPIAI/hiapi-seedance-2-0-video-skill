@@ -106,7 +106,7 @@ Multimodal reference mode:
 | `model` | yes | Must be `seedance-2-0`. |
 | `input.prompt` | yes | Text video instruction. Describe the subject, motion, camera movement, mood, and sound atmosphere. |
 | `input.duration` | no | Integer seconds from `4` to `15`. Defaults to `5`. |
-| `input.resolution` | no | `480p`, `720p`, or `1080p`. Defaults to `720p`. |
+| `input.resolution` | no | `480p`, `720p`, `1080p`, or `4k`. Defaults to `720p`. `4k` is premium-priced — confirm with the user first. |
 | `input.aspect_ratio` | no | `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`, or `adaptive`. Defaults to `16:9`. |
 | `input.first_frame_url` | no | Public image URL, data URI, or `asset://` id for first-frame image-to-video. |
 | `input.last_frame_url` | no | Public image URL, data URI, or `asset://` id for first+last-frame image-to-video. Requires `input.first_frame_url`. |

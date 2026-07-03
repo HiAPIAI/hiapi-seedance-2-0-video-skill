@@ -50,6 +50,9 @@ Supported resolutions:
 - `480p`
 - `720p`
 - `1080p`
+- `4k`
+
+`4k` is the premium tier (about 2x the per-second price of 1080p, 5x of 720p). Confirm with the user before generating at `4k`; see https://www.hiapi.ai/en/pricing.
 
 Supported ratios:
 

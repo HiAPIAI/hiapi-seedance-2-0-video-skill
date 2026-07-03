@@ -118,7 +118,7 @@ Ask your AI Agent to generate a video with natural language. If you provide an i
 - Text-to-video: describe a scene, camera movement, mood, and sound atmosphere
 - Image-to-video: provide a public image URL or data URI and describe how it should move
 - Durations: any integer from `4` to `15` seconds
-- Resolutions: `480p`, `720p`, `1080p`
+- Resolutions: `480p`, `720p`, `1080p`, `4k` (premium-priced)
 - Ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`, `adaptive`
 - Media modes: text-to-video, first-frame image-to-video, first+last-frame image-to-video, or multimodal references
 - Generated audio is on by default (API default); pass `--no-audio` to disable, `--generate-audio` to force on
