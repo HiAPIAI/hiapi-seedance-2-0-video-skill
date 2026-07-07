@@ -1,13 +1,13 @@
 ---
 name: hiapi-seedance-2-0-video
-description: Generate videos with HiAPI's seedance-2-0 model via the HiAPI unified async task API. Use when a user asks to create a video with Seedance 2.0, HiAPI Seedance 2.0, or this specific skill.
+description: Generate videos with HiAPI's seedance-2.0 model via the HiAPI unified async task API. Use when a user asks to create a video with Seedance 2.0, HiAPI Seedance 2.0, or this specific skill.
 metadata:
   short-description: Generate Seedance 2.0 videos through HiAPI
 ---
 
 # HiAPI Seedance 2.0 Video
 
-Use this skill when the user wants video generation through HiAPI's `seedance-2-0` model.
+Use this skill when the user wants video generation through HiAPI's `seedance-2.0` model.
 
 ## Requirements
 
@@ -94,7 +94,7 @@ with:
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "input": {
     "prompt": "...",
     "duration": 5,

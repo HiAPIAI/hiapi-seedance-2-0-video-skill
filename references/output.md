@@ -1,6 +1,6 @@
 # Output Handling
 
-HiAPI `seedance-2-0` video generation is asynchronous:
+HiAPI `seedance-2.0` video generation is asynchronous:
 
 1. `POST /v1/tasks` creates a task and returns `data.taskId`.
 2. `GET /v1/tasks/{taskId}` returns task status.
@@ -12,7 +12,7 @@ The CLI prints JSON:
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "taskId": "video_task_123",
   "seconds": "5",
   "resolution": "720p",

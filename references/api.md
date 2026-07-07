@@ -2,7 +2,7 @@
 
 ## Endpoint
 
-`seedance-2-0` uses HiAPI's unified async task API:
+`seedance-2.0` uses HiAPI's unified async task API:
 
 ```text
 POST https://api.hiapi.ai/v1/tasks
@@ -41,7 +41,7 @@ Text-to-video:
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "input": {
     "prompt": "A cinematic ocean cliff shot at golden hour",
     "duration": 5,
@@ -55,7 +55,7 @@ Image-to-video:
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "input": {
     "prompt": "The product photo comes alive with soft camera movement",
     "first_frame_url": "https://example.com/product.jpg",
@@ -70,7 +70,7 @@ First+last-frame image-to-video:
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "input": {
     "prompt": "Move from the first frame to the final hero frame",
     "first_frame_url": "asset://first-frame",
@@ -86,7 +86,7 @@ Multimodal reference mode:
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "input": {
     "prompt": "Use the reference images, motion video, and audio mood to create a product spot",
     "reference_image_urls": ["asset://image-1"],
@@ -103,7 +103,7 @@ Multimodal reference mode:
 
 | Parameter | Required | Notes |
 | --- | --- | --- |
-| `model` | yes | Must be `seedance-2-0`. |
+| `model` | yes | Must be `seedance-2.0`. |
 | `input.prompt` | yes | Text video instruction. Describe the subject, motion, camera movement, mood, and sound atmosphere. |
 | `input.duration` | no | Integer seconds from `4` to `15`. Defaults to `5`. |
 | `input.resolution` | no | `480p`, `720p`, `1080p`, or `4k`. Defaults to `720p`. `4k` is premium-priced — confirm with the user first. |
@@ -127,7 +127,7 @@ Video tasks can take a while, so for production HiAPI recommends passing a top-l
 
 ```json
 {
-  "model": "seedance-2-0",
+  "model": "seedance-2.0",
   "input": { "prompt": "...", "duration": 5, "resolution": "720p", "aspect_ratio": "16:9" },
   "callback": { "url": "https://your-domain.com/hiapi/callback", "when": "final" }
 }

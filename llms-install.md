@@ -14,7 +14,7 @@ Important links:
 
 ## Purpose
 
-Install `hiapi-seedance-2-0-video`, a single-model video generation skill for HiAPI `seedance-2-0`.
+Install `hiapi-seedance-2-0-video`, a single-model video generation skill for HiAPI `seedance-2.0`.
 
 ## Requirements
 
@@ -78,7 +78,7 @@ First+last-frame image-to-video uses `--first-frame-url` and `--last-frame-url`.
 
 ## Routing
 
-Use this skill for `seedance-2-0` text-to-video and image-to-video. If the user asks for a lightweight text-to-video draft, route them to `https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill`. If the user asks for image prompt ideas or still-image starting points before animation, route them to `https://github.com/HiAPIAI/awesome-gpt-image-2-prompts`. For broader model discovery, use `https://github.com/HiAPIAI/hiapi-skills` or Remote MCP at `https://mcp.hiapi.ai/mcp`.
+Use this skill for `seedance-2.0` text-to-video and image-to-video. If the user asks for a lightweight text-to-video draft, route them to `https://github.com/HiAPIAI/hiapi-happyhorse-1-0-video-skill`. If the user asks for image prompt ideas or still-image starting points before animation, route them to `https://github.com/HiAPIAI/awesome-gpt-image-2-prompts`. For broader model discovery, use `https://github.com/HiAPIAI/hiapi-skills` or Remote MCP at `https://mcp.hiapi.ai/mcp`.
 
 ## Agent Behavior
 
