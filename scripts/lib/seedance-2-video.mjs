@@ -2,9 +2,9 @@ import { Buffer } from "node:buffer";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
-export const MODEL = "seedance-2-0";
+export const MODEL = "seedance-2.0";
 export const SKILL_ID = "hiapi-seedance-2-0-video";
-export const SKILL_VERSION = "0.1.6";
+export const SKILL_VERSION = "0.1.8";
 export const DEFAULT_BASE_URL = "https://api.hiapi.ai";
 export const DEFAULT_SKILLS_MANIFEST_URL = "https://raw.githubusercontent.com/HiAPIAI/hiapi-skills/main/skills.json";
 export const DEFAULT_SECONDS = "5";
@@ -12,7 +12,10 @@ export const DEFAULT_RESOLUTION = "720p";
 export const DEFAULT_RATIO = "16:9";
 export const DEFAULT_OUTPUT_DIR = "outputs";
 export const POLL_INTERVAL_MS = 5000;
-export const POLL_TIMEOUT_MS = 180000;
+export const DEFAULT_TIMEOUT_MINUTES = 120;
+export const MIN_TIMEOUT_MINUTES = 1;
+export const MAX_TIMEOUT_MINUTES = 120;
+export const POLL_TIMEOUT_MS = DEFAULT_TIMEOUT_MINUTES * 60 * 1000;
 export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register";
 export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
 export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
@@ -72,6 +75,16 @@ export function normalizeRatio(value = DEFAULT_RATIO) {
     throw new Error(`Unsupported ratio "${ratio}". Use one of: ${Array.from(SUPPORTED_RATIOS).join(", ")}.`);
   }
   return ratio;
+}
+
+export function normalizeTimeoutMinutes(value = DEFAULT_TIMEOUT_MINUTES) {
+  const minutes = Number(String(value).trim());
+  if (!Number.isInteger(minutes) || minutes < MIN_TIMEOUT_MINUTES || minutes > MAX_TIMEOUT_MINUTES) {
+    throw new Error(
+      `Unsupported timeout "${value}". Use an integer from ${MIN_TIMEOUT_MINUTES} to ${MAX_TIMEOUT_MINUTES} minutes.`,
+    );
+  }
+  return minutes;
 }
 
 export function normalizeSeed(value) {
@@ -213,7 +226,10 @@ export function normalizeUrlList(value) {
   if (value === undefined || value === null || value === "") return [];
   const raw = Array.isArray(value) ? value : [value];
   return raw
-    .flatMap((entry) => String(entry).split(","))
+    .flatMap((entry) => {
+      const normalized = String(entry).trim();
+      return /^data:/i.test(normalized) ? [normalized] : normalized.split(",");
+    })
     .map((entry) => entry.trim())
     .filter(Boolean);
 }
@@ -273,7 +289,12 @@ export function extractTaskId(response) {
 export function extractVideoUrl(response) {
   const output = response?.data?.output || response?.output;
   if (Array.isArray(output)) {
-    const item = output.find((entry) => entry?.url);
+    const item = output.find((entry) => {
+      const url = typeof entry === "string" ? entry : entry?.url;
+      const type = typeof entry === "object" ? String(entry?.type || "").toLowerCase() : "";
+      return type === "video" || /\.(?:mp4|mov|webm)(?:\?|#|$)/i.test(String(url || ""));
+    });
+    if (typeof item === "string") return item;
     if (item?.url) return item.url;
   }
   return (
@@ -292,6 +313,10 @@ export function extractVideoUrl(response) {
 export function getTaskStatus(response) {
   const status = response?.status || response?.data?.status || "";
   return String(status).toLowerCase();
+}
+
+export function isTerminalFailureStatus(status) {
+  return new Set(["fail", "failed", "error", "cancelled", "canceled"]).has(String(status).toLowerCase());
 }
 
 export function extractTaskFailureSummary(response) {
@@ -375,7 +400,9 @@ export async function getVideoTask(taskId, config = resolveConfig()) {
 
 export async function waitForVideo(taskId, config = resolveConfig(), options = {}) {
   const pollIntervalMs = Number(options.pollIntervalMs ?? POLL_INTERVAL_MS);
-  const timeoutMs = Number(options.timeoutMs ?? POLL_TIMEOUT_MS);
+  const timeoutMs = options.timeoutMs === undefined
+    ? normalizeTimeoutMinutes(options.timeoutMinutes) * 60 * 1000
+    : Number(options.timeoutMs);
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
@@ -389,12 +416,13 @@ export async function waitForVideo(taskId, config = resolveConfig(), options = {
       return { response, videoUrl };
     }
 
-    if (status === "fail" || status === "failed") {
+    if (isTerminalFailureStatus(status)) {
       throw new Error(`Video generation failed: ${extractTaskFailureSummary(response)}`);
     }
   }
 
-  throw new Error("Video generation timed out after 3 minutes. The task may still be running; try again later.");
+  const timeoutMinutes = Math.max(1, Math.round(timeoutMs / 60000));
+  throw new Error(`Video generation timed out after ${timeoutMinutes} minutes. The task may still be running; try again later.`);
 }
 
 export async function generateVideo(options, config = resolveConfig()) {
@@ -478,7 +506,10 @@ export async function requestJson(url, init) {
   }
 
   if (!response.ok) {
-    throw new Error(buildHttpErrorMessage(response.status, body));
+    const error = new Error(buildHttpErrorMessage(response.status, body));
+    error.httpStatus = response.status;
+    error.httpResponse = body;
+    throw error;
   }
 
   return body;
@@ -542,6 +573,9 @@ export function parseArgs(argv) {
     } else if (arg === "--storage") {
       options.storage = next;
       index += 1;
+    } else if (arg === "--timeout-minutes") {
+      options.timeoutMinutes = normalizeTimeoutMinutes(next);
+      index += 1;
     } else if (arg === "--no-save") {
       options.save = false;
     } else if (arg === "--no-wait") {
@@ -588,6 +622,7 @@ Options:
   --web-search                 Enable web search when supported
   --nsfw-checker               Enable content checking when supported
   --output-dir <path>          Default: outputs
+  --timeout-minutes <1-120>    Polling limit. Default: 120
   --storage <temp|persistent>  Default: temp (free, expires ~7 days). "persistent"
                               keeps the video long-term and is BILLED ($0.05/GB·month;
                               videos are large). See https://docs.hiapi.ai/storage/

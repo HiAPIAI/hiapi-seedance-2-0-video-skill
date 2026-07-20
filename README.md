@@ -101,11 +101,13 @@ Check configuration:
 node scripts/check-config.mjs
 ```
 
-Live check:
+Public network check:
 
 ```bash
 node scripts/check-config.mjs --live
 ```
+
+`--live` only checks that the public pricing endpoint is reachable. It does not authenticate or validate the API key.
 
 ---
 
@@ -126,6 +128,7 @@ Ask your AI Agent to generate a video with natural language. If you provide an i
 - Local output: videos are saved to `outputs/` when the result can be downloaded
 - URL output: if the video cannot be downloaded, the Agent returns the remote video URL
 - Clear errors: missing Key, invalid Key, insufficient balance, invalid image URL, task timeout, and task failure all include a next step
+- Long-running jobs: polling defaults to 120 minutes and can be shortened with `--timeout-minutes <1-120>`
 
 ### Examples
 
@@ -146,7 +149,8 @@ node scripts/hiapi-seedance-2-video.mjs \
   --prompt "A cinematic shot of ocean waves crashing against cliffs at golden hour" \
   --seconds 5 \
   --resolution 720p \
-  --ratio 16:9
+  --ratio 16:9 \
+  --timeout-minutes 120
 ```
 
 Image-to-video:
@@ -233,7 +237,7 @@ Reference material limits:
 | `402 Payment Required` / `403` quota / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
 | `400 Bad Request` | Check duration, resolution, ratio, media mode, reference counts, and reference audio/video durations. |
 | `429 Too Many Requests` | Wait and retry, or reduce concurrent generation requests. |
-| Task timed out | The video may still be running. Try again later or create a shorter video. |
+| Task timed out | The video may still be running. The default polling limit is 120 minutes; use `--timeout-minutes <1-120>` to set a shorter limit. |
 | Task failed | Try a clearer prompt or a different image. |
 | No video output | Check the task response; this skill expects a video URL after the task succeeds. |
 | Skill update available | The CLI checks the HiAPI skills index at startup. If the update is optional, it prints the upgrade command and continues. |

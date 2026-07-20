@@ -54,6 +54,14 @@ Check:
 node scripts/check-config.mjs
 ```
 
+Optional public network check:
+
+```bash
+node scripts/check-config.mjs --live
+```
+
+The live check reaches the public pricing endpoint only. It does not authenticate or validate `HIAPI_API_KEY`.
+
 ## Generate
 
 Text-to-video:
@@ -63,7 +71,8 @@ node scripts/hiapi-seedance-2-video.mjs \
   --prompt "A cinematic ocean cliff shot at golden hour" \
   --seconds 5 \
   --resolution 720p \
-  --ratio 16:9
+  --ratio 16:9 \
+  --timeout-minutes 120
 ```
 
 Image-to-video:
@@ -75,6 +84,8 @@ node scripts/hiapi-seedance-2-video.mjs \
 ```
 
 First+last-frame image-to-video uses `--first-frame-url` and `--last-frame-url`. Multimodal reference mode uses `--reference-image-url`, `--reference-video-url`, and/or `--reference-audio-url`; do not mix it with first/last-frame fields. For reference video/audio, pass one duration flag per URL so the CLI can enforce each clip at 2-15 seconds and total duration at most 15 seconds.
+
+Polling defaults to 120 minutes. Use `--timeout-minutes <1-120>` only when a shorter local wait is preferable; timing out does not cancel the remote task.
 
 ## Routing
 

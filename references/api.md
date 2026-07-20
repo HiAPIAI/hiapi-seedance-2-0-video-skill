@@ -125,6 +125,8 @@ Seedance 2.0 supports text-to-video without media. Three media modes are mutuall
 
 Video tasks can take a while, so for production HiAPI recommends passing a top-level `callback.url` and waiting for the terminal notification instead of long polling. The CLI flow polls `GET /v1/tasks/{taskId}`, which is best for local debugging, low-volume jobs, or fallback reconciliation if a callback is missed.
 
+The CLI polls for up to 120 minutes by default. `--timeout-minutes <1-120>` can shorten the local polling window; reaching that limit does not cancel the remote task.
+
 ```json
 {
   "model": "seedance-2.0",

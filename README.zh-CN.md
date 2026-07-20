@@ -101,11 +101,13 @@ export HIAPI_BASE_URL="https://api.hiapi.ai"
 node scripts/check-config.mjs
 ```
 
-联网检查：
+公共网络检查：
 
 ```bash
 node scripts/check-config.mjs --live
 ```
+
+`--live` 只检查公开价格接口是否可访问，不会鉴权，也不能证明 API Key 有效。
 
 ---
 
@@ -126,6 +128,7 @@ node scripts/check-config.mjs --live
 - 本地输出：可下载的视频会保存到 `outputs/`
 - URL 输出：如果视频无法下载，Agent 会返回远程视频 URL
 - 错误提示：未配置 Key、Key 无效、余额不足、图片不可访问、任务超时、任务失败都有明确下一步
+- 长任务轮询：默认等待 120 分钟，也可用 `--timeout-minutes <1-120>` 缩短
 
 ### 使用示例
 
@@ -146,7 +149,8 @@ node scripts/hiapi-seedance-2-video.mjs \
   --prompt "A cinematic shot of ocean waves crashing against cliffs at golden hour" \
   --seconds 5 \
   --resolution 720p \
-  --ratio 16:9
+  --ratio 16:9 \
+  --timeout-minutes 120
 ```
 
 图生视频：
@@ -233,7 +237,7 @@ node scripts/hiapi-seedance-2-video.mjs \
 | `402 Payment Required` / `403` quota / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
 | `400 Bad Request` | 检查时长、清晰度、画面比例、媒体模式、参考素材数量和参考音视频时长。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
-| 任务超时 | 视频可能还在生成中，稍后重试，或生成更短的视频。 |
+| 任务超时 | 视频可能还在生成中。默认轮询上限为 120 分钟；可用 `--timeout-minutes <1-120>` 设置更短上限。 |
 | 任务失败 | 换一个更清晰的提示词，或换一张图片。 |
 | 没有视频输出 | 检查任务返回内容；该 skill 期望任务成功后返回视频 URL。 |
 | 有可选更新 | CLI 启动时会检查 HiAPI skills 索引。如果只是建议升级，会打印升级命令并继续执行。 |

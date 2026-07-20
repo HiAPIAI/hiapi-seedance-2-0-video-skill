@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
+  MODEL,
+  POLL_TIMEOUT_MS,
+  SKILL_VERSION,
   buildHttpErrorMessage,
   buildVideoPayload,
   checkSkillUpdate,
@@ -9,15 +13,35 @@ import {
   extractTaskId,
   extractTaskFailureSummary,
   extractVideoUrl,
+  isTerminalFailureStatus,
   normalizeMediaOptions,
   normalizeRatio,
   normalizeResolution,
   normalizeSeconds,
   normalizeStorage,
+  normalizeTimeoutMinutes,
   parseArgs,
+  requestJson,
   resolveConfig,
   saveVideoOutput,
 } from "../scripts/lib/seedance-2-video.mjs";
+
+test("runtime model and version match the canonical API id and package version", () => {
+  const packageJson = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  );
+  assert.equal(MODEL, "seedance-2.0");
+  assert.equal(SKILL_VERSION, packageJson.version);
+  assert.equal(SKILL_VERSION, "0.1.8");
+});
+
+test("uses a long default poll window and recognizes all terminal failure states", () => {
+  assert.equal(POLL_TIMEOUT_MS, 120 * 60 * 1000);
+  for (const status of ["fail", "failed", "error", "cancelled", "canceled"]) {
+    assert.equal(isTerminalFailureStatus(status), true, status);
+  }
+  assert.equal(isTerminalFailureStatus("handling"), false);
+});
 
 test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
   assert.deepEqual(
@@ -28,7 +52,7 @@ test("builds the HiAPI video payload for Seedance 2.0 text-to-video", () => {
       ratio: "16:9",
     }),
     {
-      model: "seedance-2-0",
+      model: "seedance-2.0",
       input: {
         prompt: "A cinematic ocean cliff shot at golden hour",
         duration: 5,
@@ -69,6 +93,18 @@ test("parseArgs reads --storage", () => {
   assert.equal("storage" in parseArgs(["--prompt", "p"]), false);
 });
 
+test("normalizes and parses the configurable polling timeout", () => {
+  assert.equal(normalizeTimeoutMinutes(), 120);
+  assert.equal(normalizeTimeoutMinutes("60"), 60);
+  assert.deepEqual(
+    parseArgs(["--prompt", "p", "--timeout-minutes", "45"]),
+    { prompt: "p", timeoutMinutes: 45 },
+  );
+  assert.throws(() => normalizeTimeoutMinutes("0"), /Unsupported timeout/);
+  assert.throws(() => normalizeTimeoutMinutes("121"), /Unsupported timeout/);
+  assert.throws(() => parseArgs(["--prompt", "p", "--timeout-minutes", "1.5"]), /Unsupported timeout/);
+});
+
 test("builds a 4k payload and normalizes uppercase 4K", () => {
   const payload = buildVideoPayload({
     prompt: "A cinematic ocean cliff shot at golden hour",
@@ -83,7 +119,7 @@ test("adds input_reference only when an image is provided", () => {
     inputReference: "https://example.com/product.png",
   });
 
-  assert.equal(payload.model, "seedance-2-0");
+  assert.equal(payload.model, "seedance-2.0");
   assert.equal(payload.input.duration, 5);
   assert.equal(payload.input.resolution, "720p");
   assert.equal(payload.input.aspect_ratio, "16:9");
@@ -125,6 +161,23 @@ test("supports multimodal reference mode with validation durations", () => {
   assert.equal(payload.input.return_last_frame, true);
   assert.equal(payload.input.web_search, true);
   assert.equal(payload.input.nsfw_checker, true);
+});
+
+test("keeps base64 data URIs intact in multimodal reference lists", () => {
+  const imageOne = "data:image/jpeg;base64,ZmFrZS1pbWFnZS0x";
+  const imageTwo = "data:image/jpeg;base64,ZmFrZS1pbWFnZS0y";
+  const audio = "data:audio/mpeg;base64,ZmFrZS1hdWRpbw==";
+  const payload = buildVideoPayload({
+    prompt: "Use the local references without splitting their base64 payloads",
+    referenceImageUrls: [imageOne, imageTwo],
+    referenceAudioUrls: [audio],
+    referenceAudioDurations: [15],
+    generateAudio: true,
+  });
+
+  assert.deepEqual(payload.input.reference_image_urls, [imageOne, imageTwo]);
+  assert.deepEqual(payload.input.reference_audio_urls, [audio]);
+  assert.equal(payload.input.generate_audio, true);
 });
 
 test("rejects mutually exclusive Seedance media modes", () => {
@@ -289,6 +342,26 @@ test("extracts task ids and video URLs from common HiAPI response shapes", () =>
     "https://cdn.example.com/out.mp4",
   );
   assert.equal(
+    extractVideoUrl({
+      data: {
+        output: [
+          { type: "image", url: "https://cdn.example.com/last-frame.png" },
+          { type: "video", url: "https://cdn.example.com/out.mp4" },
+        ],
+      },
+    }),
+    "https://cdn.example.com/out.mp4",
+  );
+  assert.equal(
+    extractVideoUrl({
+      output: [
+        "https://cdn.example.com/last-frame.png",
+        "https://cdn.example.com/out.webm?download=1",
+      ],
+    }),
+    "https://cdn.example.com/out.webm?download=1",
+  );
+  assert.equal(
     extractVideoUrl({ metadata: { url: "https://cdn.example.com/meta.mp4" } }),
     "https://cdn.example.com/meta.mp4",
   );
@@ -355,6 +428,27 @@ test("buildHttpErrorMessage gives next actions for key, balance, image, rate, an
     buildHttpErrorMessage(500, { error: { message: "task failed" } }),
     /try a clearer prompt or a different image/i,
   );
+});
+
+test("requestJson preserves explicit HTTP rejection metadata", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(
+    JSON.stringify({ message: "moderation service unavailable" }),
+    { status: 503, headers: { "content-type": "application/json" } },
+  );
+
+  try {
+    await assert.rejects(
+      () => requestJson("https://api.example.test/v1/tasks", { method: "POST" }),
+      (error) => {
+        assert.equal(error.httpStatus, 503);
+        assert.deepEqual(error.httpResponse, { message: "moderation service unavailable" });
+        return true;
+      },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("returns null when remote video download fails", async () => {

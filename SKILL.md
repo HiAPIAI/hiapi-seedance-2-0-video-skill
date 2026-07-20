@@ -79,7 +79,7 @@ Reference material limits:
 - `reference_video_urls`: at most 3 videos; each 2-15 seconds; total duration at most 15 seconds. The CLI requires one `--reference-video-duration` per video URL.
 - `reference_audio_urls`: at most 3 audio clips; each 2-15 seconds; total duration at most 15 seconds. The CLI requires one `--reference-audio-duration` per audio URL.
 
-The script creates a video task, polls until it finishes, downloads the video to `outputs/` when possible, and prints JSON with the saved file path or remote URL.
+The script creates a video task, polls for up to 120 minutes by default, downloads the video to `outputs/` when possible, and prints JSON with the saved file path or remote URL. Use `--timeout-minutes <1-120>` to choose a shorter polling limit.
 
 ## API Contract
 
@@ -131,7 +131,7 @@ Run:
 node scripts/check-config.mjs
 ```
 
-Use `--live` only when you want to verify that the configured key can reach the HiAPI pricing endpoint.
+Use `--live` only to verify that the public HiAPI pricing endpoint is reachable. It does not authenticate or validate the configured API key.
 
 ## Error Guidance
 

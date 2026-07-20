@@ -8,6 +8,8 @@ HiAPI `seedance-2.0` video generation is asynchronous:
 
 The CLI downloads HTTP(S) video URLs to `outputs/` when possible.
 
+The default polling limit is 120 minutes. If the CLI times out, the remote task may still finish; a timeout is not a cancellation.
+
 The CLI prints JSON:
 
 ```json
@@ -40,4 +42,4 @@ If the video cannot be downloaded, return the remote URL instead.
 - Invalid request: "Check the duration, resolution, ratio, audio flag, and image URL. Seedance 2.0 supports integer durations from 4 to 15 seconds; 480p, 720p, 1080p, and 4k; and 16:9, 9:16, 1:1, 4:3, 3:4, 21:9, adaptive."
 - Rate limited: "The request was rate limited. Wait and retry, or reduce concurrent video requests."
 - Task failed: "Try a clearer prompt or a different image."
-- Timeout: "The video may still be running. Try again later or create a shorter video."
+- Timeout: "The video may still be running. Check the task later; timing out does not cancel it."
