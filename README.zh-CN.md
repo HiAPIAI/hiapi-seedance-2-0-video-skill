@@ -2,13 +2,13 @@
 
 把 Seedance 2.0 视频生成接入你的 AI Agent。
 
-**Seedance 2.0 • 安装 • API Key • [HiAPI](https://www.hiapi.ai/zh)**
+**Seedance 2.0 • 安装 • API Key • [HiAPI](https://www.hiapi.ai/zh?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)**
 
-[免费获取 API Key](https://www.hiapi.ai/zh/register) · [查看价格](https://www.hiapi.ai/zh/pricing) · [HiAPI 文档](https://docs.hiapi.ai) · [全部 HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills) · [Remote MCP](https://docs.hiapi.ai/zh/for-ai/)
+[免费获取 API Key](https://www.hiapi.ai/zh/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · [查看价格](https://www.hiapi.ai/zh/pricing?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · [HiAPI 文档](https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · [全部 HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills) · [Remote MCP](https://docs.hiapi.ai/zh/for-ai/?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
-> **HiAPI Matrix:** 🎨 [Image Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · 🎬 [Video Prompts](https://github.com/HiAPIAI/awesome-ai-video-prompts) · 🛠️ **Agent Skills (you are here)** · 🤖 [Remote MCP](https://docs.hiapi.ai/for-ai/) · 📖 [API Docs](https://docs.hiapi.ai)
+> **HiAPI Matrix:** 🎨 [Image Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · 🎬 [Video Prompts](https://github.com/HiAPIAI/awesome-ai-video-prompts) · 🛠️ **Agent Skills (you are here)** · 🤖 [Remote MCP](https://docs.hiapi.ai/for-ai/?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · 📖 [API Docs](https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)
 
 ---
 
@@ -77,7 +77,7 @@ cp -R hiapi-seedance-2-0-video-skill "$AGENT_SKILLS_DIR/hiapi-seedance-2-0-video
 
 1. 运行：npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y
    （会自动检测 Codex / Claude Code 的 skills 目录）
-2. 从 https://www.hiapi.ai/zh/dashboard/api-keys 获取并设置环境变量 HIAPI_API_KEY
+2. 从 https://www.hiapi.ai/zh/dashboard/api-keys?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video 获取并设置环境变量 HIAPI_API_KEY
 3. 读取 SKILL.md 了解使用方法
 ```
 
@@ -85,7 +85,7 @@ cp -R hiapi-seedance-2-0-video-skill "$AGENT_SKILLS_DIR/hiapi-seedance-2-0-video
 
 ## 获取 API Key
 
-1. 打开 [免费获取 API Key](https://www.hiapi.ai/zh/register)
+1. 打开 [免费获取 API Key](https://www.hiapi.ai/zh/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)
 2. 登录或注册 HiAPI 账号
 3. 创建新的 API Key
 4. 在运行 Agent 的终端设置环境变量：
@@ -232,9 +232,9 @@ node scripts/hiapi-seedance-2-video.mjs \
 
 | 问题 | 解决方案 |
 | --- | --- |
-| `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
+| `HIAPI_API_KEY is required` | 去 [免费获取 API Key](https://www.hiapi.ai/zh/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) 创建 Key，然后设置 `HIAPI_API_KEY`。 |
 | `401 Unauthorized` | 检查 API Key 是否正确，或重新生成 Key。 |
-| `402 Payment Required` / `403` quota / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard) 检查账号状态。 |
+| `402 Payment Required` / `403` quota / 余额不足 | 进入 [HiAPI Dashboard](https://www.hiapi.ai/zh/dashboard?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) 检查账号状态。 |
 | `400 Bad Request` | 检查时长、清晰度、画面比例、媒体模式、参考素材数量和参考音视频时长。 |
 | `429 Too Many Requests` | 稍后重试，或减少并发生成请求。 |
 | 任务超时 | 视频可能还在生成中。默认轮询上限为 120 分钟；可用 `--timeout-minutes <1-120>` 设置更短上限。 |
@@ -265,4 +265,4 @@ MIT
 
 ---
 
-[HiAPI](https://www.hiapi.ai/zh) — 一个 API，所有 AI 模型
+[HiAPI](https://www.hiapi.ai/zh?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) — 一个 API，所有 AI 模型

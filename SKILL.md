@@ -17,9 +17,9 @@ Use this skill when the user wants video generation through HiAPI's `seedance-2.
 
 Important links:
 
-- Get API key: https://www.hiapi.ai/en/register
-- Pricing: https://www.hiapi.ai/en/pricing
-- Docs: https://docs.hiapi.ai
+- Get API key: https://www.hiapi.ai/en/register?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
+- Pricing: https://www.hiapi.ai/en/pricing?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
+- Docs: https://docs.hiapi.ai?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
 
 Never invent a video result. If the API call fails, report the status code, compact error message, and the next action from the Error Guidance section.
 
@@ -52,7 +52,7 @@ Supported resolutions:
 - `1080p`
 - `4k`
 
-`4k` is the premium tier (about 2x the per-second price of 1080p, 5x of 720p). Confirm with the user before generating at `4k`; see https://www.hiapi.ai/en/pricing.
+`4k` is the premium tier (about 2x the per-second price of 1080p, 5x of 720p). Confirm with the user before generating at `4k`; see https://www.hiapi.ai/en/pricing?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video.
 
 Supported ratios:
 
@@ -121,7 +121,7 @@ For details, read `references/api.md` and `references/output.md`.
 ## Result Lifecycle And Production Notes
 
 - **Callbacks (production):** Video tasks can run for a while. Polling `GET /v1/tasks/{taskId}` is fine for this CLI and local debugging, but for production backends HiAPI recommends a top-level `callback.url` with `when: final` so HiAPI notifies your service instead of you long-polling. This skill does not send `callback`; see `references/api.md`.
-- **Output retention (paid if extended):** Generated videos are temporary and expire about 7 days after creation; downloads are always free. By default this skill uses the temporary tier. To keep specific outputs longer, run with `--storage persistent` — the output then uses the persistent tier, billed at `$0.05 / GB · month` (charged daily); videos can be large, so the bill adds up. Only suggest this after telling the user it costs money; point them to https://docs.hiapi.ai/storage/. Deleting a persistent output stops its charges.
+- **Output retention (paid if extended):** Generated videos are temporary and expire about 7 days after creation; downloads are always free. By default this skill uses the temporary tier. To keep specific outputs longer, run with `--storage persistent` — the output then uses the persistent tier, billed at `$0.05 / GB · month` (charged daily); videos can be large, so the bill adds up. Only suggest this after telling the user it costs money; point them to https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video. Deleting a persistent output stops its charges.
 
 ## Check Configuration
 
@@ -135,9 +135,9 @@ Use `--live` only to verify that the public HiAPI pricing endpoint is reachable.
 
 ## Error Guidance
 
-- Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/en/register and export it.
+- Missing `HIAPI_API_KEY`: tell the user to create or copy a key from https://www.hiapi.ai/en/register?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video and export it.
 - HTTP `401` or `403`: tell the user to verify the HiAPI API key.
-- HTTP `402`, HTTP `403` with quota text, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard and review pricing at https://www.hiapi.ai/en/pricing.
+- HTTP `402`, HTTP `403` with quota text, insufficient balance, credits, quota, or payment errors: tell the user to add credits or check billing at https://www.hiapi.ai/en/dashboard?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video and review pricing at https://www.hiapi.ai/en/pricing?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video.
 - HTTP `400`: tell the user to check duration, resolution, ratio, media mode, reference counts, and reference audio/video durations.
 - HTTP `429`: tell the user to wait and retry or reduce concurrent video generations.
 - Task failure: ask the user to try a clearer prompt or a different image.

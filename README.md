@@ -2,13 +2,13 @@
 
 Add Seedance 2.0 video generation to your AI Agent.
 
-**Seedance 2.0 • Install • API Key • [HiAPI](https://www.hiapi.ai)**
+**Seedance 2.0 • Install • API Key • [HiAPI](https://www.hiapi.ai/en?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)**
 
-[Get API Key](https://www.hiapi.ai/en/register) · [Pricing](https://www.hiapi.ai/en/pricing) · [HiAPI Docs](https://docs.hiapi.ai) · [All HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills) · [Remote MCP](https://docs.hiapi.ai/for-ai/)
+[Get API Key](https://www.hiapi.ai/en/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · [Pricing](https://www.hiapi.ai/en/pricing?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · [HiAPI Docs](https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · [All HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills) · [Remote MCP](https://docs.hiapi.ai/for-ai/?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)
 
 Languages: [English](README.md) | [简体中文](README.zh-CN.md)
 
-> **HiAPI Matrix:** 🎨 [Image Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · 🎬 [Video Prompts](https://github.com/HiAPIAI/awesome-ai-video-prompts) · 🛠️ **Agent Skills (you are here)** · 🤖 [Remote MCP](https://docs.hiapi.ai/for-ai/) · 📖 [API Docs](https://docs.hiapi.ai)
+> **HiAPI Matrix:** 🎨 [Image Prompts](https://github.com/HiAPIAI/awesome-gpt-image-2-prompts) · 🎬 [Video Prompts](https://github.com/HiAPIAI/awesome-ai-video-prompts) · 🛠️ **Agent Skills (you are here)** · 🤖 [Remote MCP](https://docs.hiapi.ai/for-ai/?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) · 📖 [API Docs](https://docs.hiapi.ai?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)
 
 ---
 
@@ -77,7 +77,7 @@ Install the HiAPI Seedance 2.0 video generation skill:
 
 1. Run: npx -y github:HiAPIAI/hiapi-seedance-2-0-video-skill -y
    (auto-detects Codex / Claude Code skill directories)
-2. Set the HIAPI_API_KEY environment variable from https://www.hiapi.ai/en/dashboard/api-keys
+2. Set the HIAPI_API_KEY environment variable from https://www.hiapi.ai/en/dashboard/api-keys?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video
 3. Read SKILL.md for usage
 ```
 
@@ -85,7 +85,7 @@ Install the HiAPI Seedance 2.0 video generation skill:
 
 ## Get API Key
 
-1. Open [Get API Key](https://www.hiapi.ai/en/register)
+1. Open [Get API Key](https://www.hiapi.ai/en/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video)
 2. Sign in or create a HiAPI account
 3. Create a new API Key
 4. Set the environment variable in the terminal that runs your agent:
@@ -232,9 +232,9 @@ Reference material limits:
 
 | Problem | Solution |
 | --- | --- |
-| `HIAPI_API_KEY is required` | Create a Key at [Get API Key](https://www.hiapi.ai/en/register), then set `HIAPI_API_KEY`. |
+| `HIAPI_API_KEY is required` | Create a Key at [Get API Key](https://www.hiapi.ai/en/register?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video), then set `HIAPI_API_KEY`. |
 | `401 Unauthorized` | Check whether the API Key is correct, or generate a new Key. |
-| `402 Payment Required` / `403` quota / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard) and check your account status. |
+| `402 Payment Required` / `403` quota / insufficient balance | Open the [HiAPI Dashboard](https://www.hiapi.ai/en/dashboard?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) and check your account status. |
 | `400 Bad Request` | Check duration, resolution, ratio, media mode, reference counts, and reference audio/video durations. |
 | `429 Too Many Requests` | Wait and retry, or reduce concurrent generation requests. |
 | Task timed out | The video may still be running. The default polling limit is 120 minutes; use `--timeout-minutes <1-120>` to set a shorter limit. |
@@ -265,4 +265,4 @@ MIT
 
 ---
 
-[HiAPI](https://www.hiapi.ai) — One API, all AI models
+[HiAPI](https://www.hiapi.ai/en?utm_source=github&utm_medium=readme&utm_campaign=hiapi-seedance-2-0-video) — One API, all AI models
