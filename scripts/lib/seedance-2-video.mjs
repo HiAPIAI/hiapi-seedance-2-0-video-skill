@@ -16,9 +16,9 @@ export const DEFAULT_TIMEOUT_MINUTES = 120;
 export const MIN_TIMEOUT_MINUTES = 1;
 export const MAX_TIMEOUT_MINUTES = 120;
 export const POLL_TIMEOUT_MS = DEFAULT_TIMEOUT_MINUTES * 60 * 1000;
-export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video";
-export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video";
-export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video";
+export const HIAPI_API_KEYS_URL = "https://www.hiapi.ai/en/register";
+export const HIAPI_DASHBOARD_URL = "https://www.hiapi.ai/en/dashboard";
+export const HIAPI_PRICING_URL = "https://www.hiapi.ai/en/pricing";
 
 export const MIN_SECONDS = 4;
 export const MAX_SECONDS = 15;
@@ -103,7 +103,7 @@ export function normalizeStorage(value = DEFAULT_STORAGE) {
   if (!SUPPORTED_STORAGE.has(storage)) {
     throw new Error(
       `Unsupported storage "${storage}". Use one of: ${Array.from(SUPPORTED_STORAGE).join(", ")}. ` +
-        `"persistent" keeps outputs beyond ~7 days and is billed ($0.05/GB·month); see https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video.`,
+        `"persistent" keeps outputs beyond ~7 days and is billed ($0.05/GB·month); see https://docs.hiapi.ai/storage/.`,
     );
   }
   return storage;
@@ -431,7 +431,7 @@ export async function generateVideo(options, config = resolveConfig()) {
   // Persistent storage costs money; warn on stderr so stdout stays clean JSON.
   if (payload.storage === "persistent") {
     console.error(
-      "Note: --storage persistent keeps this video beyond ~7 days and is billed at $0.05/GB·month (charged daily); videos are large, so watch the bill. Delete it to stop charges. See https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video",
+      "Note: --storage persistent keeps this video beyond ~7 days and is billed at $0.05/GB·month (charged daily); videos are large, so watch the bill. Delete it to stop charges. See https://docs.hiapi.ai/storage/",
     );
   }
 
@@ -625,7 +625,7 @@ Options:
   --timeout-minutes <1-120>    Polling limit. Default: 120
   --storage <temp|persistent>  Default: temp (free, expires ~7 days). "persistent"
                               keeps the video long-term and is BILLED ($0.05/GB·month;
-                              videos are large). See https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
+                              videos are large). See https://docs.hiapi.ai/storage/
   --no-save                    Return the remote video URL without downloading
   --no-wait                    Create the task and return the task id
 

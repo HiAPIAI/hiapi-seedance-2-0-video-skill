@@ -25,14 +25,14 @@ Do not print API keys in logs or final answers.
 If the user does not have a key, send them to:
 
 ```text
-https://www.hiapi.ai/en/register?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
+https://www.hiapi.ai/en/register
 ```
 
 If generation fails because of balance, credits, quota, or payment status, send them to:
 
 ```text
-https://www.hiapi.ai/en/dashboard?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
-https://www.hiapi.ai/en/pricing?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video
+https://www.hiapi.ai/en/dashboard
+https://www.hiapi.ai/en/pricing
 ```
 
 ## Request Body
@@ -149,4 +149,4 @@ Every output is served from HiAPI's CDN as a `url`. **By default outputs are tem
 - Promote/list/delete later with `POST /v1/storages/promote`, `GET /v1/storages`, `POST /v1/storages/delete` (Bearer-authenticated, account-scoped). Deleting stops charges immediately; there is no demote.
 - Default per-account cap is 100 GB; persistent writes past the cap silently fall back to temporary (generation still succeeds).
 
-This skill downloads results locally (a free operation) and defaults to the temporary tier. Pass `--storage persistent` to opt into long-term billed storage (the CLI sends top-level `"storage": "persistent"` and prints a cost notice on stderr). Videos can be large, so mention the cost before suggesting a user turn it on. See https://docs.hiapi.ai/storage/?utm_source=skill&utm_medium=agent&utm_campaign=hiapi-seedance-2-0-video for full details.
+This skill downloads results locally (a free operation) and defaults to the temporary tier. Pass `--storage persistent` to opt into long-term billed storage (the CLI sends top-level `"storage": "persistent"` and prints a cost notice on stderr). Videos can be large, so mention the cost before suggesting a user turn it on. See https://docs.hiapi.ai/storage/ for full details.
