@@ -13,7 +13,7 @@ const SKILL_FOLDER = 'hiapi-seedance-2-0-video';
 const REPO_URL = 'https://github.com/HiAPIAI/hiapi-seedance-2-0-video-skill.git';
 const DISPLAY_NAME = 'HiAPI Seedance 2.0 Video Skill';
 const MODEL_PAGE = 'https://www.hiapi.ai/en/models/seedance-2-0';
-const API_KEY_PAGE = 'https://www.hiapi.ai/en/dashboard/api-keys';
+const API_KEY_PAGE = 'https://www.hiapi.ai/en/dashboard/api-keys?utm_source=skill&utm_medium=install&utm_campaign=hiapi-seedance-2-0-video';
 
 const argList = argv.slice(2);
 const yes = argList.includes('-y') || argList.includes('--yes') || !stdin.isTTY;
